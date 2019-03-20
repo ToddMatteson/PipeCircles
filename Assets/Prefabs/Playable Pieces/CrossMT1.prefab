@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 12137436398151622}
   - component: {fileID: 2409915526332604490}
   - component: {fileID: 9026443438388889282}
+  - component: {fileID: 2094615981450835532}
   m_Layer: 5
   m_Name: CrossMT1
   m_TagString: Untagged
@@ -26,8 +27,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7822084524536403183}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.2}
-  m_LocalScale: {x: 0.0100115, y: 0.0100115, z: 0.0100115}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalScale: {x: 0.0100115, y: 0.0100115, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -74,3 +75,27 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+--- !u!114 &2094615981450835532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7822084524536403183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0afb58d992c40b34eac938139c1b8521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canWaterEnterTop: 1
+  canWaterEnterRight: 1
+  canWaterEnterBottom: 1
+  canWaterEnterLeft: 1
+  canWaterExitTop: 1
+  canWaterExitRight: 1
+  canWaterExitBottom: 1
+  canWaterExitLeft: 1
+  TopGoesWhere: 3
+  RightGoesWhere: 4
+  BottomGoesWhere: 1
+  LeftGoesWhere: 2

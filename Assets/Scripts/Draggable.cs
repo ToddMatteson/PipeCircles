@@ -25,11 +25,6 @@ namespace PipeCircles
 
 		[SerializeField] Transform upcomingTransform;
 
-		private void Start()
-		{
-		
-		}
-
 		void Update()
 		{
 			if (Input.GetMouseButtonDown(0))
@@ -62,7 +57,6 @@ namespace PipeCircles
 					if (objectToReplace != null)
 					{
 						objectToDrag.position = objectToReplace.position;
-						//objectToReplace.position = originalPos; //For swapping gameObjects
 						objectToDrag.tag = REPLACEABLE_TAG;
 						upcomingTransform.GetComponent<Upcoming>().PieceClicked();
 
@@ -75,7 +69,6 @@ namespace PipeCircles
 					objectToDragImage.raycastTarget = true;
 					objectToDrag = null;
 				}
-
 				dragging = false;
 			}
 		}
@@ -106,11 +99,8 @@ namespace PipeCircles
 			pointer.position = Input.mousePosition;
 
 			EventSystem.current.RaycastAll(pointer,hitObjects);
-			if (hitObjects.Count <= 0)
-			{ return null; }
+			if (hitObjects.Count <= 0) { return null; }
 			return hitObjects.First().gameObject;
 		}
-
-
 	}
 }

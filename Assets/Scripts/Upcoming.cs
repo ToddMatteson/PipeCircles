@@ -16,6 +16,8 @@ namespace PipeCircles
 		[SerializeField] Transform[] piecePrefab;
 		[SerializeField] [Range (0, 10000f)] float[] pieceWeighting;
 
+		[SerializeField] Transform placedPiecesContainer;
+
 		Transform[] upcomingPieces = new Transform[4];
 
 		bool moveUpcomingPieces = false;
@@ -44,7 +46,7 @@ namespace PipeCircles
 
 		public void PieceClicked()
 		{
-			Transform pieceClicked = upcomingPieces[0];
+			SavePiecePlaced();
 			ReindexPieceArray();
 			GenerateNewPiece();
 			ReverseChildren();
@@ -182,6 +184,13 @@ namespace PipeCircles
 			{
 				moveUpcomingPieces = false;
 			}
+		}
+
+		private void SavePiecePlaced()
+		{
+			Transform pieceClicked = upcomingPieces[0];
+			pieceClicked.SetParent(placedPiecesContainer);
+			pieceClicked.SetAsLastSibling();
 		}
 	}
 }
