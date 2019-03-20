@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,10 @@ public class Piece : MonoBehaviour
 	//What other properties are common to all pieces?
 	
 	public enum Direction { Nowhere, Top, Right, Bottom, Left }
+
+	//TODO get these directly from the board itself
+	const int BOARD_UNITS_WIDE = 12;
+	const int BOARD_UNITS_HIGH = 9;
 
 	[Header ("Water Entering")]
 	[SerializeField] bool canWaterEnterTop = false;
@@ -26,24 +31,44 @@ public class Piece : MonoBehaviour
 	[SerializeField] Direction BottomGoesWhere = Direction.Nowhere;
 	[SerializeField] Direction LeftGoesWhere = Direction.Nowhere;
 
-	//Location in world space, X and Y - how to get this?
-	float worldXPos;
-	float worldYPos;
 	Vector2 worldPos;
-
-	//Location in board grid, X and Y - how to get this?
-	int boardXPos;
-	int boardYPos;
 	Vector2Int boardPos;
 
-
-	void Start()
-    {
-        
-    }
+	bool pieceOnBoard = false;
 
     void Update()
     {
-        
+		UpdateWorldAndBoardPos();
+		CheckIfPiecePlacedOnBoard();
     }
+
+	private void UpdateWorldAndBoardPos()
+	{
+		worldPos = gameObject.transform.position;
+		TranslateWorldPosToBoardPos();
+	}
+
+	private void TranslateWorldPosToBoardPos()
+	{
+		//TODO Temporary fix, minimum needed for functionality and completely wrong
+		//Wait until the scaling issues are done being sorted out???
+		boardPos.x = Mathf.RoundToInt(worldPos.x);
+		boardPos.y = Mathf.RoundToInt(worldPos.y);
+	}
+
+	private void CheckIfPiecePlacedOnBoard()
+	{
+		bool pieceWasOnBoard = pieceOnBoard;
+		bool pieceNowOnBoard = true;
+
+		if (boardPos.x < 0 || boardPos.x >= BOARD_UNITS_WIDE)
+		{
+			pieceWasOnBoard = false;
+		}
+
+		if (boardPos.y < 0 || boardPos.y >= BOARD_UNITS_HIGH)
+		{
+			pieceWasOnBoard = false;
+		}
+	}
 }

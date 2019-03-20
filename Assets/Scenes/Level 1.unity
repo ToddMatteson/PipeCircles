@@ -2556,12 +2556,12 @@ MonoBehaviour:
   pieceWeighting:
   - 0.5
   - 0.5
-  - 1
-  - 1
-  - 1
-  - 1
-  - 1
-  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
   placedPiecesContainer: {fileID: 1664140811}
 --- !u!114 &417349290
 MonoBehaviour:
@@ -5294,7 +5294,7 @@ RectTransform:
   m_GameObject: {fileID: 996390502}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 2.66}
-  m_LocalScale: {x: 0.0100115, y: 0.0100115, z: 1}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 1}
   m_Children:
   - {fileID: 2109803091}
   - {fileID: 1309591697}
@@ -5309,8 +5309,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.432, y: 4.799}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 4.412, y: 4.799}
+  m_SizeDelta: {x: 19.2, y: 10.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &996390507
 MonoBehaviour:
@@ -11932,32 +11932,32 @@ PrefabInstance:
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[2]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[3]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[4]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[5]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[6]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
       propertyPath: pieceWeighting.Array.data[7]
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2233377671654672610, guid: 5f57886b3d7617249906ed702418a346,
         type: 3}
