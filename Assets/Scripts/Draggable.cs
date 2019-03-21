@@ -29,8 +29,9 @@ namespace PipeCircles
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
+				print("Got to GetMouseButtonDown");
 				objectToDrag = GetDraggableTransformUnderMouse(true);
-
+			
 				if (objectToDrag != null)
 				{
 					dragging = true;
@@ -77,6 +78,15 @@ namespace PipeCircles
 		{
 			bool objectDraggable = draggable;
 			GameObject clickedObject = GetObjectUnderMouse();
+			if (clickedObject == null)
+			{
+				print("null object");
+			} else
+			{
+				print("clickedObject " + clickedObject.name);
+			}
+			
+
 			if (draggable)
 			{
 				if (clickedObject != null && clickedObject.tag == DRAGGABLE_TAG)

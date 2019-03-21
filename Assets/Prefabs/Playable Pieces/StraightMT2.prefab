@@ -28,7 +28,7 @@ RectTransform:
   m_GameObject: {fileID: 7822084524536403183}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -1}
-  m_LocalScale: {x: 0.0100115, y: 0.0100115, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -87,11 +87,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0afb58d992c40b34eac938139c1b8521, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canWaterEnterLeft: 1
+  canWaterEnterTop: 0
   canWaterEnterRight: 1
-  canWaterEnterUp: 0
-  canWaterEnterDown: 0
-  canWaterExitLeft: 1
+  canWaterEnterBottom: 0
+  canWaterEnterLeft: 1
+  canWaterExitTop: 0
   canWaterExitRight: 1
-  canWaterExitUp: 0
-  canWaterExitDown: 0
+  canWaterExitBottom: 1
+  canWaterExitLeft: 1
+  TopGoesWhere: 0
+  RightGoesWhere: 4
+  BottomGoesWhere: 0
+  LeftGoesWhere: 2
