@@ -41,7 +41,6 @@ namespace PipeCircles
 			UpdateScoreAndLoopsText();
 		}
 
-
 		public int GetLevelScore() { return levelScore; }
 
 		public int GetTotalScore() { return totalScore; }

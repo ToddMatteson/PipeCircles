@@ -59,7 +59,7 @@ public class Piece : MonoBehaviour
 	private void CheckIfPiecePlacedOnBoard()
 	{
 		bool pieceWasOnBoard = pieceOnBoard;
-		bool pieceNowOnBoard = true;
+		//bool pieceNowOnBoard = true;
 
 		if (boardPos.x < 0 || boardPos.x >= BOARD_UNITS_WIDE)
 		{

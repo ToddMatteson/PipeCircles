@@ -5,8 +5,6 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Linq;
 
-//Code in this script was inspired by a tutorial from Omnirift on Youtube at https://www.youtube.com/watch?v=fhBJWTO09Lw
-
 namespace PipeCircles
 {
 	public class Draggable : MonoBehaviour
@@ -19,7 +17,7 @@ namespace PipeCircles
 		private Vector2 originalPos;
 
 		private Transform objectToDrag;
-		private Image objectToDragImage;
+		private Sprite objectToDragImage;
 
 		List<RaycastResult> hitObjects = new List<RaycastResult>();
 
@@ -29,7 +27,6 @@ namespace PipeCircles
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
-				print("Got to GetMouseButtonDown");
 				objectToDrag = GetDraggableTransformUnderMouse(true);
 			
 				if (objectToDrag != null)
@@ -39,14 +36,21 @@ namespace PipeCircles
 					objectToDrag.SetAsLastSibling();
 
 					originalPos = objectToDrag.position;
-					objectToDragImage = objectToDrag.GetComponent<Image>();
-					objectToDragImage.raycastTarget = false;
+
+					//Insert part about not being a raycast target here
+					objectToDragImage = objectToDrag.GetComponent<Sprite>();
+					//objectToDragImage.raycastTarget = false;
 				}
 			}
 
-			if (dragging)
+			if (dragging && objectToDrag != null)
 			{
-				objectToDrag.position = Input.mousePosition;
+				print("Mouse: " + Input.mousePosition);
+				print("ObjectToDrag: " + objectToDrag.position);
+				print("ObjectToDrag original position: " + originalPos);
+
+				objectToDrag.position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+				//objectToDrag.position = Input.mousePosition;
 			}
 
 			if (Input.GetMouseButtonUp(0))
@@ -67,7 +71,7 @@ namespace PipeCircles
 						objectToDrag.position = originalPos;
 					}
 
-					objectToDragImage.raycastTarget = true;
+					//objectToDragImage.raycastTarget = true;
 					objectToDrag = null;
 				}
 				dragging = false;
@@ -77,7 +81,7 @@ namespace PipeCircles
 		private Transform GetDraggableTransformUnderMouse(bool draggable)
 		{
 			bool objectDraggable = draggable;
-			GameObject clickedObject = GetObjectUnderMouse();
+			GameObject clickedObject = FindObjectClicked();
 			if (clickedObject == null)
 			{
 				print("null object");
@@ -85,7 +89,6 @@ namespace PipeCircles
 			{
 				print("clickedObject " + clickedObject.name);
 			}
-			
 
 			if (draggable)
 			{
@@ -111,6 +114,23 @@ namespace PipeCircles
 			EventSystem.current.RaycastAll(pointer,hitObjects);
 			if (hitObjects.Count <= 0) { return null; }
 			return hitObjects.First().gameObject;
+		}
+
+		private GameObject FindObjectClicked()
+		{
+			Vector3 mousePosFar = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.farClipPlane);
+			Vector3 mousePosNear = new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.nearClipPlane);
+			Vector3 mousePosF = Camera.main.ScreenToWorldPoint(mousePosFar);
+			Vector3 mousePosN = Camera.main.ScreenToWorldPoint(mousePosNear);
+			//Debug.DrawRay(mousePosN, mousePosF - mousePosN, Color.green);
+
+			RaycastHit2D hit = Physics2D.Raycast(mousePosN, mousePosF - mousePosN);
+			if (hit.collider != null)
+			{
+				print("Object found: " + hit.collider.name);
+				return hit.collider.gameObject;
+			}
+			return null;
 		}
 	}
 }

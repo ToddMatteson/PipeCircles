@@ -15,8 +15,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - GamePieces
+  - MyUnused
   - 
   - 
   - 
@@ -42,6 +42,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: NonPlayable
+    uniqueID: 934241061
     locked: 0
   - name: GamePieces
     uniqueID: 1858055451
