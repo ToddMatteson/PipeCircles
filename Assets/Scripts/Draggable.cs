@@ -16,6 +16,7 @@ namespace PipeCircles
 		private bool dragging = false;
 		private Vector2 originalPos;
 		private int originalSortingOrder;
+		private Vector2 mouseOffset;
 
 		[SerializeField] Transform upcomingTransform;
 
@@ -51,7 +52,7 @@ namespace PipeCircles
 			if (dragging && objectToDrag != null)
 			{
 				Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-				objectToDrag.position = new Vector2(mouseWorldPos.x, mouseWorldPos.y);
+				objectToDrag.position = new Vector2(mouseWorldPos.x, mouseWorldPos.y) + mouseOffset;
 			}
 		}
 
@@ -62,11 +63,6 @@ namespace PipeCircles
 				if (objectToDrag != null)
 				{
 					Transform objectToReplace = GetDraggableTransformUnderMouse(false);
-
-					print("Mouse: " + Input.mousePosition);
-					print("ObjectToDrag: " + objectToDrag.position);
-					print("ObjectToDrag original position: " + originalPos);
-
 					if (objectToReplace != null)
 					{
 						objectToDrag.position = objectToReplace.position;
@@ -91,14 +87,6 @@ namespace PipeCircles
 		{
 			bool objectDraggable = draggable;
 			GameObject clickedObject = FindObjectClicked();
-			/*if (clickedObject == null)
-			{
-				print("null object");
-			} else
-			{
-				print("clickedObject " + clickedObject.name);
-			}
-			*/
 
 			if (draggable)
 			{
@@ -126,7 +114,9 @@ namespace PipeCircles
 			RaycastHit2D hit = Physics2D.Raycast(mousePosN, mousePosF - mousePosN);
 			if (hit.collider != null)
 			{
-				//print("Object found: " + hit.collider.name);
+				Vector3 pos1 = hit.transform.position;
+				mouseOffset = new Vector2(pos1.x, pos1.y) - hit.point;
+
 				return hit.collider.gameObject;
 			}
 			return null;

@@ -9,15 +9,50 @@ namespace PipeCircles
 	{
 		[SerializeField] TextMeshProUGUI timerText;
 		[SerializeField] float timePenalty = 3f;
-		[SerializeField] float timeRemaining = 40f;
+		[SerializeField] float startingTime = 40f;
 
+		float timeRemaining;
 		bool timerRunning = false;
 		bool speedUp = false;
+
+		// Singleton pattern
+		private void Awake()
+		{
+			int classCount = FindObjectsOfType<Timer>().Length;
+			if (classCount > 1)
+			{
+				gameObject.SetActive(false);
+				Destroy(gameObject);
+			} else
+			{
+				DontDestroyOnLoad(gameObject);
+			}
+		}
+
+		private void Start()
+		{
+			ResetTimer();
+		}
 
 		void Update()
 		{
 			StartTimer();
 			UpdateTimerText();
+		}
+
+		public void ResetTimer()
+		{
+			timeRemaining = startingTime;
+		}
+
+		public void StartTimer()
+		{
+			timerRunning = true;
+		}
+
+		public void StopTimer()
+		{
+			timerRunning = false;
 		}
 
 		private void UpdateTimerText()
@@ -33,16 +68,6 @@ namespace PipeCircles
 				}
 			}
 			timerText.text = Mathf.Round(timeRemaining).ToString();
-		}
-
-		public void StartTimer()
-		{
-			timerRunning = true;
-		}
-
-		public void StopTimer()
-		{
-			timerRunning = false;
 		}
 
 		public void ApplyTimerPenalty()

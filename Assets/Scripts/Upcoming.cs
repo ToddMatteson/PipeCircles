@@ -17,6 +17,7 @@ namespace PipeCircles
 		[SerializeField] [Range (0, 10000f)] float[] pieceWeighting;
 
 		[SerializeField] Transform placedPiecesContainer;
+		[SerializeField] Transform gameBoard;
 
 		Transform[] upcomingPieces = new Transform[4];
 
@@ -191,6 +192,7 @@ namespace PipeCircles
 			Transform pieceClicked = upcomingPieces[0];
 			pieceClicked.SetParent(placedPiecesContainer);
 			pieceClicked.SetAsLastSibling();
+			gameBoard.GetComponent<Board>().AddPieceToBoard(pieceClicked);
 		}
 	}
 }
