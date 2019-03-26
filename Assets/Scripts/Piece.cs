@@ -7,7 +7,6 @@ namespace PipeCircles
 {
 	public class Piece : MonoBehaviour
 	{
-		
 		bool hasWater = false;
 		bool pieceOnBoard = false;
 		Vector2 worldPos;
@@ -31,10 +30,48 @@ namespace PipeCircles
 		[SerializeField] Direction BottomGoesWhere = Direction.Nowhere;
 		[SerializeField] Direction LeftGoesWhere = Direction.Nowhere;
 
+		public bool CanWaterEnter(Direction dir)
+		{
+			switch (dir)
+			{
+				case Direction.Top:
+					return canWaterEnterTop;
+				case Direction.Right:
+					return canWaterEnterRight;
+				case Direction.Bottom:
+					return canWaterEnterBottom;
+				case Direction.Left:
+					return canWaterEnterLeft;
+				case Direction.Nowhere:
+					return false;
+				default:
+					return false;
+			}
+		}
+
 		public Direction GetTopGoesWhere() { return TopGoesWhere; }
 		public Direction GetRightGoesWhere() { return RightGoesWhere; }
 		public Direction GetBottomGoesWhere() { return BottomGoesWhere; }
 		public Direction GetLeftGoesWhere() { return LeftGoesWhere; }
+
+		public Direction WhereWaterExits(Direction entranceDirection)
+		{
+			switch (entranceDirection)
+			{
+				case Direction.Top:
+					return TopGoesWhere;
+				case Direction.Right:
+					return RightGoesWhere;
+				case Direction.Bottom:
+					return BottomGoesWhere;
+				case Direction.Left:
+					return LeftGoesWhere;
+				case Direction.Nowhere:
+					return Direction.Nowhere;
+				default:
+					return Direction.Nowhere;
+			}
+		}
 	}
 
 	public enum Direction { Nowhere, Top, Right, Bottom, Left }

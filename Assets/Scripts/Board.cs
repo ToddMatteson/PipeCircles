@@ -16,9 +16,7 @@ namespace PipeCircles
 
 		Vector2Int boardStart = new Vector2Int(3, 4);
 
-		Dictionary<Direction, Vector2Int> directionToVector2 = new Dictionary<Direction, Vector2Int>();
-
-		List<Transform> pathFromStart = new List<Transform>();
+		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 
 		// Singleton pattern
 		private void Awake()
@@ -42,11 +40,11 @@ namespace PipeCircles
 
 		private void AddToDictionary()
 		{
-			directionToVector2.Add(Direction.Top, new Vector2Int(0, 1));
-			directionToVector2.Add(Direction.Right, new Vector2Int(1, 0));
-			directionToVector2.Add(Direction.Bottom, new Vector2Int(0, -1));
-			directionToVector2.Add(Direction.Left, new Vector2Int(-1, 0));
-			directionToVector2.Add(Direction.Nowhere, new Vector2Int(0, 0));
+			dirToVector2.Add(Direction.Top, new Vector2Int(0, 1));
+			dirToVector2.Add(Direction.Right, new Vector2Int(1, 0));
+			dirToVector2.Add(Direction.Bottom, new Vector2Int(0, -1));
+			dirToVector2.Add(Direction.Left, new Vector2Int(-1, 0));
+			dirToVector2.Add(Direction.Nowhere, new Vector2Int(0, 0));
 		}
 
 		public void ClearBoard()
@@ -62,7 +60,7 @@ namespace PipeCircles
 
 		public void AddPieceToBoard(Transform transformToAdd) 
 		{
-			Vector2Int boardPos = DetermineBoardPos(transformToAdd);
+			Vector2Int boardPos = CalcBoardPos(transformToAdd);
 			if (CheckValidBoardPos(boardPos))
 			{
 				board[boardPos.x, boardPos.y] = transformToAdd;
@@ -70,12 +68,14 @@ namespace PipeCircles
 			{
 				Debug.LogError("Attempted to add invalid transform to game board");
 			}
+
+			FindPathFromStart();
 		}
 
-		private Vector2Int DetermineBoardPos(Transform transformToAdd)
+		private Vector2Int CalcBoardPos(Transform transformToCheck)
 		{
-			int boardX = Mathf.RoundToInt(transformToAdd.position.x / PIXELS_PER_BOARD_UNIT);
-			int boardY = Mathf.RoundToInt(transformToAdd.position.y / PIXELS_PER_BOARD_UNIT);
+			int boardX = Mathf.RoundToInt(transformToCheck.position.x / PIXELS_PER_BOARD_UNIT);
+			int boardY = Mathf.RoundToInt(transformToCheck.position.y / PIXELS_PER_BOARD_UNIT);
 			return new Vector2Int(boardX, boardY);
 		}
 
@@ -86,23 +86,52 @@ namespace PipeCircles
 			return true;
 		}
 
-		private void FindPathFromStart()
+		private List<Transform> FindPathFromStart()
 		{
-			if (board[boardStart.x, boardStart.y] != null)
-			{
-				pathFromStart.Add(board[boardStart.x, boardStart.y]);
-			}
-			Direction exitDirection = pathFromStart[0].GetComponent<Piece>().GetTopGoesWhere(); //TODO make it so we read in the start piece's exit direction
-			
-			
-			//See if the direction heading leads to an existing piece
-				//if no existing piece, path is finished
-				//if existing piece check if it can accept from that direction
-					//if can't exist, do not add to the path
-					//if can exist, add to the path
-						//determine the new direction heading
-			//See if the direction heading leads ...
+			bool done = false;
+			List<Transform> pathFromStart = new List<Transform>();
+			if (board[boardStart.x, boardStart.y] == null) { return pathFromStart; } //No starting piece => no path
 
+			pathFromStart.Add(board[boardStart.x, boardStart.y]);
+			Direction exitDirection = pathFromStart[0].GetComponent<Piece>().GetTopGoesWhere(); //TODO read in the start piece's exit direction
+			while (!done)
+			{
+				if (exitDirection == Direction.Nowhere) { return pathFromStart; } //Water doesn't exit => no more path
+
+				int newBoardPosX = dirToVector2[exitDirection].x + CalcBoardPos(pathFromStart[pathFromStart.Count - 1]).x;
+				int newBoardPosY = dirToVector2[exitDirection].y + CalcBoardPos(pathFromStart[pathFromStart.Count - 1]).y;
+				Vector2 newBoardPos = new Vector2(newBoardPosX, newBoardPosY);
+
+				if (!CheckValidBoardPos(newBoardPos)) { return pathFromStart; } //Piece on edge of board => no more path
+				if (board[newBoardPosX, newBoardPosY] == null) { return pathFromStart; } //No piece placed yet => no more path
+
+				Direction entranceDirection = ReverseDirection(exitDirection); //Top of one piece is the bottom of the one above it
+				if (!board[newBoardPosX, newBoardPosY].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return pathFromStart; } //Piece is turned wrong way => no more path
+
+				//Now have a valid piece, can add it to the path list
+				pathFromStart.Add(board[newBoardPosX, newBoardPosY]);
+				exitDirection = board[newBoardPosX, newBoardPosY].GetComponent<Piece>().WhereWaterExits(entranceDirection);
+			}
+			return pathFromStart; //Should be unreachable
+		}
+
+		private Direction ReverseDirection(Direction directionToReverse)
+		{
+			switch (directionToReverse)
+			{
+				case Direction.Top:
+					return Direction.Bottom;
+				case Direction.Right:
+					return Direction.Left;
+				case Direction.Bottom:
+					return Direction.Top;
+				case Direction.Left:
+					return Direction.Right;
+				case Direction.Nowhere:
+					return Direction.Nowhere;
+				default:
+					return Direction.Nowhere;
+			}
 		}
 	}
 }
