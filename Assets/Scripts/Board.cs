@@ -18,8 +18,12 @@ namespace PipeCircles
 
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 
-		// Singleton pattern
 		private void Awake()
+		{
+			SingletonPattern();
+		}
+
+		private void SingletonPattern()
 		{
 			int classCount = FindObjectsOfType<Board>().Length;
 			if (classCount > 1)
@@ -113,6 +117,12 @@ namespace PipeCircles
 				exitDirection = board[newBoardPosX, newBoardPosY].GetComponent<Piece>().WhereWaterExits(entranceDirection);
 			}
 			return pathFromStart; //Should be unreachable
+		}
+
+		private void TraversePath()
+		{
+			if (FindObjectOfType<Timer>().GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
+
 		}
 
 		private Direction ReverseDirection(Direction directionToReverse)

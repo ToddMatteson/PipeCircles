@@ -22,8 +22,12 @@ namespace PipeCircles
 		int levelLoops = 0;
 		int totalLoops = 0;
 
-		// Singleton pattern
 		private void Awake()
+		{
+			SingletonPattern();
+		}
+
+		private void SingletonPattern()
 		{
 			int classCount = FindObjectsOfType<Scoring>().Length;
 			if (classCount > 1)

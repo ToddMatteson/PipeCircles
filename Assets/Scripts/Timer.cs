@@ -15,8 +15,12 @@ namespace PipeCircles
 		bool timerRunning = false;
 		bool speedUp = false;
 
-		// Singleton pattern
 		private void Awake()
+		{
+			SingletonPattern();
+		}
+
+		private void SingletonPattern()
 		{
 			int classCount = FindObjectsOfType<Timer>().Length;
 			if (classCount > 1)
@@ -78,6 +82,11 @@ namespace PipeCircles
 		public void SwitchSpeed()
 		{
 			speedUp = !speedUp;
+		}
+
+		public float GetTimeRemaining()
+		{
+			return timeRemaining;
 		}
 	}
 }
