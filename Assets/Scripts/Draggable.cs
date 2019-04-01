@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Linq;
+using System;
 
 namespace PipeCircles
 {
@@ -70,6 +71,7 @@ namespace PipeCircles
 						upcomingTransform.GetComponent<Upcoming>().PieceClicked();
 
 						Destroy(objectToReplace.gameObject); //TODO Needs to be reworked to show reconstruction time
+						PlayPiecePlacedVFX();
 					} else
 					{
 						objectToDrag.position = originalPos;
@@ -120,6 +122,11 @@ namespace PipeCircles
 				return hit.collider.gameObject;
 			}
 			return null;
+		}
+
+		private void PlayPiecePlacedVFX()
+		{
+			
 		}
 	}
 }

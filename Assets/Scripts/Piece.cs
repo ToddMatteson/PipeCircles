@@ -11,6 +11,7 @@ namespace PipeCircles
 		bool pieceOnBoard = false;
 		Vector2 worldPos;
 		Vector2Int boardPos;
+		int numWaterPasses = 0;
 
 		[Header("Water Entering")]
 		[SerializeField] bool canWaterEnterTop = false;
@@ -72,6 +73,19 @@ namespace PipeCircles
 					return Direction.Nowhere;
 			}
 		}
+		
+		public int GetNumWaterPasses()
+		{
+			return numWaterPasses;
+		}
+
+		public void IncrementNumWaterPasses()
+		{
+			numWaterPasses++;
+		}
+
+
+
 	}
 
 	public enum Direction { Nowhere, Top, Right, Bottom, Left }

@@ -13,10 +13,12 @@ namespace PipeCircles
 		private const int PIXELS_PER_BOARD_UNIT = 100;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
-
 		Vector2Int boardStart = new Vector2Int(3, 4);
-
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
+		List<Transform> pathFromStart = new List<Transform>();
+		bool waitingForAnimation = false;
+
+		int waterFlowIndex = 0;
 
 		private void Awake()
 		{
@@ -40,6 +42,12 @@ namespace PipeCircles
 		{
 			AddToDictionary();
 			ClearBoard();
+		}
+
+		private void Update()
+		{
+			pathFromStart = FindPathFromStart();
+			WaterFlows();
 		}
 
 		private void AddToDictionary()
@@ -73,7 +81,7 @@ namespace PipeCircles
 				Debug.LogError("Attempted to add invalid transform to game board");
 			}
 
-			FindPathFromStart();
+			pathFromStart = FindPathFromStart();
 		}
 
 		private Vector2Int CalcBoardPos(Transform transformToCheck)
@@ -119,12 +127,6 @@ namespace PipeCircles
 			return pathFromStart; //Should be unreachable
 		}
 
-		private void TraversePath()
-		{
-			if (FindObjectOfType<Timer>().GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
-
-		}
-
 		private Direction ReverseDirection(Direction directionToReverse)
 		{
 			switch (directionToReverse)
@@ -142,6 +144,77 @@ namespace PipeCircles
 				default:
 					return Direction.Nowhere;
 			}
+		}
+
+		private void WaterFlows()
+		{
+			print(pathFromStart.Count);
+			if (FindObjectOfType<Timer>().GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
+			if (waitingForAnimation) { return; } //Only want one instance of WaterFlows to be waiting on an animation to finish
+
+			if (waterFlowIndex < pathFromStart.Count)
+			{
+				Transform activePieceTransform = pathFromStart[waterFlowIndex];
+				Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
+				Piece activePiece = activePieceTransform.gameObject.GetComponent<Piece>();
+
+				Direction startingDirection = FindStartingDirection(activePieceTransform);
+
+				animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
+				animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
+				animator.SetBool("FirstPass", activePiece.GetNumWaterPasses() == 0);
+				animator.enabled = true;
+
+				activePiece.IncrementNumWaterPasses();
+				activePieceTransform.gameObject.tag = "Untagged"; //Prevents the piece from being replaced by another
+				WaitForAnimationCompletion(animator);
+				waterFlowIndex++;
+			}
+		}
+
+		private Direction FindStartingDirection(Transform activePieceTransform)
+		{
+			if (waterFlowIndex == 0)
+			{
+				return Direction.Top; //TODO fix this
+			} else
+			{
+				Transform previousPieceTransform = pathFromStart[waterFlowIndex - 1];
+				Vector2 previousPieceBoardPos = CalcBoardPos(previousPieceTransform);
+				Vector2 activePieceBoardPos = CalcBoardPos(activePieceTransform);
+				Vector2 differenceBoardPos = activePieceBoardPos - previousPieceBoardPos;
+
+				if (differenceBoardPos.x == 1)
+				{
+					return Direction.Left;
+				} else if (differenceBoardPos.x == -1)
+				{
+					return Direction.Right;
+				} else if (differenceBoardPos.y == 1)
+				{
+					return Direction.Bottom;
+				} else if (differenceBoardPos.y == -1)
+				{
+					return Direction.Top;
+				} else
+				{
+					Debug.LogError("startingDirection unknown");
+					return Direction.Nowhere;
+				}
+			}
+		}
+
+		private void WaitForAnimationCompletion(Animator animator)
+		{
+			float waitTime = animator.GetComponent<Animation>().clip.length;  //VERY MUCH suspect that this line is causing errors by looking for <Animation>
+			waitingForAnimation = true;
+			WaitForAnimation(waitTime);
+			waitingForAnimation = false;
+		}
+
+		IEnumerator WaitForAnimation(float waitTime)
+		{
+			yield return new WaitForSeconds(waitTime);
 		}
 	}
 }
