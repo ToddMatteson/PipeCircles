@@ -99,14 +99,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0afb58d992c40b34eac938139c1b8521, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canWaterEnterTop: 1
-  canWaterEnterRight: 1
+  canWaterEnterTop: 0
+  canWaterEnterRight: 0
   canWaterEnterBottom: 1
   canWaterEnterLeft: 1
-  canWaterExitTop: 1
-  canWaterExitRight: 1
-  canWaterExitBottom: 1
-  canWaterExitLeft: 1
   TopGoesWhere: 0
   RightGoesWhere: 0
   BottomGoesWhere: 4

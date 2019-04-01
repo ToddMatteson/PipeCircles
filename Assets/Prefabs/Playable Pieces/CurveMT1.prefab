@@ -101,12 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canWaterEnterTop: 1
   canWaterEnterRight: 1
-  canWaterEnterBottom: 1
-  canWaterEnterLeft: 1
-  canWaterExitTop: 1
-  canWaterExitRight: 1
-  canWaterExitBottom: 1
-  canWaterExitLeft: 1
+  canWaterEnterBottom: 0
+  canWaterEnterLeft: 0
   TopGoesWhere: 2
   RightGoesWhere: 1
   BottomGoesWhere: 0

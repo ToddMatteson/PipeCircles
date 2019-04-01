@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3818373074455677949}
-  - component: {fileID: 3818373074455677948}
   - component: {fileID: 3818373074455677891}
   m_Layer: 0
   m_Name: Timer
@@ -32,24 +31,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3818373074455677948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3818373074455677890}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a021fd2d8062d1c43bd51103ed65ff52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  loopScore: 100
-  loopTierBonus: 200
-  pieceTraveledScore: 20
-  specialItemScore: 10
-  endReachedScore: 10
-  unusedPieceScore: -10
 --- !u!114 &3818373074455677891
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,5 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 584985338ad5cda4db1131715078a1ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timerText: {fileID: 0}
   timePenalty: 3
-  timeRemaining: 40
+  startingTime: 40

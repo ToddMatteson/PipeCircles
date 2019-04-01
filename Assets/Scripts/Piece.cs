@@ -7,8 +7,6 @@ namespace PipeCircles
 {
 	public class Piece : MonoBehaviour
 	{
-		bool hasWater = false;
-		bool pieceOnBoard = false;
 		Vector2 worldPos;
 		Vector2Int boardPos;
 		int numWaterPasses = 0;
@@ -19,17 +17,20 @@ namespace PipeCircles
 		[SerializeField] bool canWaterEnterBottom = false;
 		[SerializeField] bool canWaterEnterLeft = false;
 
-		[Header("Water Exiting")]
-		[SerializeField] bool canWaterExitTop = false;
-		[SerializeField] bool canWaterExitRight = false;
-		[SerializeField] bool canWaterExitBottom = false;
-		[SerializeField] bool canWaterExitLeft = false;
-
 		[Header("Paths Available")]
 		[SerializeField] Direction TopGoesWhere = Direction.Nowhere;
 		[SerializeField] Direction RightGoesWhere = Direction.Nowhere;
 		[SerializeField] Direction BottomGoesWhere = Direction.Nowhere;
 		[SerializeField] Direction LeftGoesWhere = Direction.Nowhere;
+
+		Board board;
+		Scoring scoring;
+
+		void Start()
+		{
+			board = FindObjectOfType<Board>().GetComponent<Board>();
+			Scoring scoring = FindObjectOfType<Scoring>().GetComponent<Scoring>();
+		}
 
 		public bool CanWaterEnter(Direction dir)
 		{
@@ -84,8 +85,15 @@ namespace PipeCircles
 			numWaterPasses++;
 		}
 
+		public void AnimationComplete() //Called by animations
+		{
+			board.AnimationComplete();
+		}
 
-
+		public void LoopCompleted() //Called by animations
+		{
+			scoring.LoopCompleted();
+		}
 	}
 
 	public enum Direction { Nowhere, Top, Right, Bottom, Left }

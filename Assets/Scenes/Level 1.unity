@@ -9395,7 +9395,7 @@ GameObject:
   - component: {fileID: 1434374207}
   m_Layer: 0
   m_Name: GameBoard
-  m_TagString: Untagged
+  m_TagString: Board
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -14196,6 +14196,11 @@ PrefabInstance:
         type: 3}
       propertyPath: timeRemaining
       value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3818373074455677891, guid: 10c9443e9659b764b9bee9f828aef994,
+        type: 3}
+      propertyPath: startingTime
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}

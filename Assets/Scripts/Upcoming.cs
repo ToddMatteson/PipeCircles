@@ -82,7 +82,7 @@ namespace PipeCircles
 			upcomingPieces[openSlot] = Instantiate(piecePrefab[piecePicked],Vector3.zero,Quaternion.identity);
 			upcomingPieces[openSlot].transform.SetParent(this.transform);
 			upcomingPieces[openSlot].transform.SetAsLastSibling();
-			upcomingPieces[openSlot].GetComponent<Animator>().enabled = false; //Should stop the animation from playing before water gets to it
+			upcomingPieces[openSlot].GetComponent<Animator>().SetBool("Transition", false);
 		}
 
 		private int PickRandomPieceToCreate()
