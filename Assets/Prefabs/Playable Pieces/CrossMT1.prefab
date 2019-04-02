@@ -103,14 +103,16 @@ MonoBehaviour:
   canWaterEnterRight: 1
   canWaterEnterBottom: 1
   canWaterEnterLeft: 1
-  canWaterExitTop: 1
-  canWaterExitRight: 1
-  canWaterExitBottom: 1
-  canWaterExitLeft: 1
-  TopGoesWhere: 3
-  RightGoesWhere: 4
-  BottomGoesWhere: 1
-  LeftGoesWhere: 2
+  topGoesWhere: 3
+  rightGoesWhere: 4
+  bottomGoesWhere: 1
+  leftGoesWhere: 2
+  leftOverVertical: {fileID: 21300200, guid: 166995ff9c86e164ea1339f80fecb78f, type: 3}
+  leftOverHorizontal: {fileID: 21300200, guid: e3d5e71304ba6714c9a5191b19b313a9, type: 3}
+  leftOverFull: {fileID: 21300200, guid: 31c1c1d8aba177f458c2a9c00b28d71a, type: 3}
+  topOverVertical: {fileID: 21300200, guid: 85760234ce67ac043aab88bd90eefafe, type: 3}
+  topOverHorizontal: {fileID: 21300200, guid: 31139462ed1c8524e80539e6af561ad3, type: 3}
+  topOverFull: {fileID: 21300200, guid: 3c7b155bfb7a7ee479e5869c218d3039, type: 3}
 --- !u!61 &1576666732109800721
 BoxCollider2D:
   m_ObjectHideFlags: 0

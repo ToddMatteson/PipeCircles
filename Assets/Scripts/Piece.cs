@@ -18,10 +18,18 @@ namespace PipeCircles
 		[SerializeField] bool canWaterEnterLeft = false;
 
 		[Header("Paths Available")]
-		[SerializeField] Direction TopGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction RightGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction BottomGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction LeftGoesWhere = Direction.Nowhere;
+		[SerializeField] Direction topGoesWhere = Direction.Nowhere;
+		[SerializeField] Direction rightGoesWhere = Direction.Nowhere;
+		[SerializeField] Direction bottomGoesWhere = Direction.Nowhere;
+		[SerializeField] Direction leftGoesWhere = Direction.Nowhere;
+
+		[Header("Cross Sprites")]
+		[SerializeField] Sprite leftOverVertical;
+		[SerializeField] Sprite leftOverHorizontal;
+		[SerializeField] Sprite leftOverFull;
+		[SerializeField] Sprite topOverVertical;
+		[SerializeField] Sprite topOverHorizontal;
+		[SerializeField] Sprite topOverFull;
 
 		Board board;
 		Scoring scoring;
@@ -29,7 +37,7 @@ namespace PipeCircles
 		void Start()
 		{
 			board = FindObjectOfType<Board>().GetComponent<Board>();
-			Scoring scoring = FindObjectOfType<Scoring>().GetComponent<Scoring>();
+			scoring = FindObjectOfType<Scoring>().GetComponent<Scoring>();
 		}
 
 		public bool CanWaterEnter(Direction dir)
@@ -51,38 +59,28 @@ namespace PipeCircles
 			}
 		}
 
-		public Direction GetTopGoesWhere() { return TopGoesWhere; }
-		public Direction GetRightGoesWhere() { return RightGoesWhere; }
-		public Direction GetBottomGoesWhere() { return BottomGoesWhere; }
-		public Direction GetLeftGoesWhere() { return LeftGoesWhere; }
+		public Direction GetTopGoesWhere() { return topGoesWhere; }
+		public Direction GetRightGoesWhere() { return rightGoesWhere; }
+		public Direction GetBottomGoesWhere() { return bottomGoesWhere; }
+		public Direction GetLeftGoesWhere() { return leftGoesWhere; }
 
 		public Direction WhereWaterExits(Direction entranceDirection)
 		{
 			switch (entranceDirection)
 			{
 				case Direction.Top:
-					return TopGoesWhere;
+					return topGoesWhere;
 				case Direction.Right:
-					return RightGoesWhere;
+					return rightGoesWhere;
 				case Direction.Bottom:
-					return BottomGoesWhere;
+					return bottomGoesWhere;
 				case Direction.Left:
-					return LeftGoesWhere;
+					return leftGoesWhere;
 				case Direction.Nowhere:
 					return Direction.Nowhere;
 				default:
 					return Direction.Nowhere;
 			}
-		}
-		
-		public int GetNumWaterPasses()
-		{
-			return numWaterPasses;
-		}
-
-		public void IncrementNumWaterPasses()
-		{
-			numWaterPasses++;
 		}
 
 		public void AnimationComplete() //Called by animations

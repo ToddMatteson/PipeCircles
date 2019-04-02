@@ -19,7 +19,6 @@ namespace PipeCircles
 		bool animationComplete = true;
 		int waterFlowIndex = 0;
 		Timer timer;
-		
 
 		private void Awake()
 		{
@@ -150,6 +149,8 @@ namespace PipeCircles
 
 		private void WaterFlows()
 		{
+			print("" + waterFlowIndex + ", Animation Complete = " + animationComplete.ToString());
+			print("" + pathFromStart.Count().ToString());
 			if (timer.GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
 			if (!animationComplete) { return; } //Only want one instance of WaterFlows to be waiting on an animation to finish
 
@@ -157,13 +158,8 @@ namespace PipeCircles
 			{
 				Transform activePieceTransform = pathFromStart[waterFlowIndex];
 				Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
-				Piece activePiece = activePieceTransform.gameObject.GetComponent<Piece>();
-				animator.SetBool("ReturnToHub", true);
-
 				Direction startingDirection = FindStartingDirection(activePieceTransform);
-
-				SetAnimatorBools(animator, activePiece, startingDirection);
-				activePiece.IncrementNumWaterPasses();
+				SetAnimatorEvents(animator, startingDirection);
 				activePieceTransform.gameObject.tag = "Untagged"; //Prevents the piece from being replaced by another
 				animationComplete = false;
 				waterFlowIndex++;
@@ -202,21 +198,15 @@ namespace PipeCircles
 			}
 		}
 
-		private void SetAnimatorBools(Animator animator, Piece activePiece, Direction startingDirection)
+		private void SetAnimatorEvents(Animator animator, Direction startingDirection)
 		{
-			animator.SetBool("ReturnToHub", false);
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
 			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
-			animator.SetBool("FirstPass", activePiece.GetNumWaterPasses() == 0);
-			animator.SetBool("Transition", true);
+			animator.SetTrigger("Transition");
 		}
 
 		public void AnimationComplete()
 		{
-			Transform activePieceTransform = pathFromStart[waterFlowIndex - 1]; //Different index since the index was incremented at end of WaterFlows()
-			Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
-			animator.SetBool("Transition", false);
-			animator.SetBool("ReturnToHub", false);
 			animationComplete = true;
 		}
 	}
