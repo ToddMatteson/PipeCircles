@@ -149,8 +149,6 @@ namespace PipeCircles
 
 		private void WaterFlows()
 		{
-			print("" + waterFlowIndex + ", Animation Complete = " + animationComplete.ToString());
-			print("" + pathFromStart.Count().ToString());
 			if (timer.GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
 			if (!animationComplete) { return; } //Only want one instance of WaterFlows to be waiting on an animation to finish
 
