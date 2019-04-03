@@ -9,7 +9,6 @@ namespace PipeCircles
 	{
 		Vector2 worldPos;
 		Vector2Int boardPos;
-		int numWaterPasses = 0;
 
 		[Header("Water Entering")]
 		[SerializeField] bool canWaterEnterTop = false;

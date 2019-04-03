@@ -6,61 +6,93 @@ namespace PipeCircles
 	public class Upcoming : MonoBehaviour
 	{
 		public const string DRAGGABLE_TAG = "Draggable";
+		private static int numPieces = 4;
 
-		[SerializeField] int numPieces = 4;
+		[Header ("Location Data")]
 		[SerializeField] float pos1StartX = 0;
 		[SerializeField] float pos1StartY = 0;
 		[SerializeField] float pieceSpacingY = 100f;
 		[SerializeField] float moveSpeed = 100f;
+		[SerializeField] float waterDropYOffset = 20f;
 
+		[Header ("Prefabs and Weights")]
 		[SerializeField] Transform[] piecePrefab;
 		[SerializeField] [Range (0, 10000f)] float[] pieceWeighting;
+		[SerializeField] Transform[] waterDropPrefabs;
 
+		[Header ("Other")]
 		[SerializeField] Transform placedPiecesContainer;
+		[SerializeField] Transform waterDropsContainer;
 		[SerializeField] Transform gameBoard;
+		[Range (0, 2000f)]
+		[SerializeField] float distDropDestroy;
 
-		Transform[] upcomingPieces = new Transform[4];
+		Transform[] upcomingPieces = new Transform[numPieces];
+		Transform[] waterDrops = new Transform[numPieces];
 
 		bool moveUpcomingPieces = false;
 		float totalWeight;
 
+		bool removeWaterDrop = false;
+		Transform waterDropToRemove;
+		Vector3 waterDropToRemoveInitialPos;
+
 		private void Start()
 		{
-			GenerateInitialPieces();	
+			GenerateInitialPiecesAndWaterDrops();	
 		}
 
 		private void Update()
 		{
 			if (moveUpcomingPieces)
 			{
-				MoveUpcomingTransforms();
+				MoveUpcomingPieceTransforms();
+				MoveWaterDropTransforms();
+			}
+
+			if (removeWaterDrop)
+			{
+				DisposeOfUsedWaterDrop();
 			}
 		}
 
-		private void GenerateInitialPieces()
+		private void GenerateInitialPiecesAndWaterDrops()
 		{
 			for (int i = 0; i < numPieces; i++)
 			{
-				GenerateNewPiece();
+				GenerateNewPieceAndWaterDrop();
 			}
 		}
 
 		public void PieceClicked()
 		{
 			SavePiecePlaced();
-			ReindexPieceArray();
-			GenerateNewPiece();
+			DisposeOfUsedWaterDrop();
+			ReindexPieceAndWaterDropArrays();
+			GenerateNewPieceAndWaterDrop();
 			ReverseChildren();
-			MoveUpcomingTransforms();
+			MoveUpcomingPieceTransforms();
+			MoveWaterDropTransforms();
 		}
 
-		private void GenerateNewPiece()
+		public void clearArrays()
+		{
+			for (int i = 0; i < numPieces; i++)
+			{
+				upcomingPieces[i] = null;
+				waterDrops[i] = null;
+			}
+		}
+
+		private void GenerateNewPieceAndWaterDrop()
 		{
 			int openSlot = FindFirstOpenArraySlot();
 			if (openSlot == numPieces) { return; }  //No open spaces in the array
 			CreatePiece(openSlot);
-			SetDraggable();
+			CreateWaterDrop(openSlot);
+			SetPieceDraggable();
 			RepositionPiece(openSlot);
+			RepositionWaterDrops(openSlot);
 		}
 
 		private int FindFirstOpenArraySlot()
@@ -85,6 +117,14 @@ namespace PipeCircles
 			upcomingPieces[openSlot].GetComponent<Animator>().SetBool("Transition", false);
 		}
 
+		private void CreateWaterDrop(int openSlot)
+		{
+			int waterDropPicked = UnityEngine.Random.Range(0, waterDropPrefabs.Length);
+			waterDrops[openSlot] = Instantiate(waterDropPrefabs[waterDropPicked], Vector3.zero, Quaternion.identity);
+			waterDrops[openSlot].transform.SetParent(waterDropsContainer);
+			waterDrops[openSlot].transform.SetAsLastSibling();
+		}
+
 		private int PickRandomPieceToCreate()
 		{
 			totalWeight = SumPieceWeighting();
@@ -107,7 +147,7 @@ namespace PipeCircles
 				}
 			}
 
-			return 0; //should be unreachable
+			return 0; //Should be unreachable
 		}
 
 		private float SumPieceWeighting()
@@ -131,7 +171,7 @@ namespace PipeCircles
 			return sum;
 		}
 
-		private void SetDraggable()
+		private void SetPieceDraggable()
 		{
 			upcomingPieces[0].gameObject.tag = DRAGGABLE_TAG;
 			for (int i = 1; i < numPieces; i++)
@@ -145,18 +185,27 @@ namespace PipeCircles
 
 		private void RepositionPiece(int openSlot)
 		{
-			float yPos = pos1StartY - openSlot * pieceSpacingY;
+			float yPos = pos1StartY + openSlot * pieceSpacingY;
 			Vector2 newPos = new Vector2(pos1StartX,yPos);
 			upcomingPieces[openSlot].transform.position = newPos;
 		}
 
-		private void ReindexPieceArray()
+		private void RepositionWaterDrops(int openSlot)
+		{
+			float yPos = pos1StartY + openSlot * pieceSpacingY + waterDropYOffset;
+			Vector2 newPos = new Vector2(pos1StartX, yPos);
+			waterDrops[openSlot].transform.position = newPos;
+		}
+
+		private void ReindexPieceAndWaterDropArrays()
 		{
 			for (int i = 0; i < numPieces - 1; i++)
 			{
 				upcomingPieces[i] = upcomingPieces[i + 1];
+				waterDrops[i] = waterDrops[i + 1];
 			}
 			upcomingPieces[numPieces - 1] = null;
+			waterDrops[numPieces - 1] = null;
 		}
 
 		private void ReverseChildren() //So the 3rd piece looks like it is sliding off the 4th piece, not other way around
@@ -164,10 +213,11 @@ namespace PipeCircles
 			for (int i = numPieces - 1; i >= 0; i--)
 			{
 				upcomingPieces[i].transform.SetAsLastSibling();
+				waterDrops[i].transform.SetAsLastSibling();
 			}
 		}
 
-		private void MoveUpcomingTransforms() //Without a full array, nothing moves
+		private void MoveUpcomingPieceTransforms() //Without a full array, nothing moves
 		{
 			if (upcomingPieces[numPieces - 1] == null || upcomingPieces[numPieces - 2] == null) { return; }
 			Vector3 lastPieces = upcomingPieces[numPieces - 1].position - upcomingPieces[numPieces - 2].position;
@@ -188,12 +238,56 @@ namespace PipeCircles
 			}
 		}
 
+		private void MoveWaterDropTransforms() //To avoid confusion, moving water drops was moved from a different method than the pieces
+		{
+			if (waterDrops[numPieces - 1] == null || waterDrops[numPieces - 2] == null) { return; }
+			Vector3 lastWaterDrop = waterDrops[numPieces - 1].position - waterDrops[numPieces - 2].position;
+			if (lastWaterDrop.magnitude < pieceSpacingY)
+			{
+				for (int i = 0; i < numPieces - 1; i++) //Last piece was already placed in correct spot when created
+				{
+					float xPos = waterDrops[i].transform.position.x;
+					float yPos = waterDrops[i].transform.position.y;
+					float yNewPos = yPos + moveSpeed * Time.deltaTime;
+					waterDrops[i].transform.position = new Vector2(xPos, yNewPos);
+				}
+			}
+		}
+
 		private void SavePiecePlaced()
 		{
 			Transform pieceClicked = upcomingPieces[0];
 			pieceClicked.SetParent(placedPiecesContainer);
 			pieceClicked.SetAsLastSibling();
 			gameBoard.GetComponent<Board>().AddPieceToBoard(pieceClicked);
+		}
+
+		private void DisposeOfUsedWaterDrop()
+		{
+			if (removeWaterDrop)
+			{
+				Vector3 posDifference = waterDropToRemove.position - waterDropToRemoveInitialPos;
+				if (posDifference.magnitude > distDropDestroy)
+				{
+					removeWaterDrop = false;
+					Destroy(waterDropToRemove.gameObject);
+				} else
+				{
+					float xPos = waterDropToRemove.transform.position.x;
+					float yPos = waterDropToRemove.transform.position.y;
+					float zPos = waterDropToRemove.transform.position.z;
+					float yNewPos = yPos + moveSpeed * Time.deltaTime;
+					waterDropToRemove.transform.position = new Vector3(xPos, yNewPos, zPos);
+				}
+			} else
+			{
+				waterDropToRemove = waterDrops[0];
+				float xPos = waterDropToRemove.transform.position.x;
+				float yPos = waterDropToRemove.transform.position.y;
+				float zPos = waterDropToRemove.transform.position.y;
+				waterDropToRemoveInitialPos = new Vector3(xPos, yPos, zPos);
+				removeWaterDrop = true;
+			}
 		}
 	}
 }

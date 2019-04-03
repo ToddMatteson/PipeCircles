@@ -3517,6 +3517,36 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 4, y: 4}
   m_EdgeRadius: 0
+--- !u!1 &580131971
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 580131972}
+  m_Layer: 8
+  m_Name: WaterDrops
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &580131972
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 580131971}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1403962581}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &679751341
 GameObject:
   m_ObjectHideFlags: 0
@@ -9222,7 +9252,8 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -1.1305847, y: 2.880005, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 580131972}
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -9238,11 +9269,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ff9d3716a2afa4198c8fd8b4250d7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numPieces: 4
   pos1StartX: -163
-  pos1StartY: 626
-  pieceSpacingY: 192
-  moveSpeed: 300
+  pos1StartY: 30
+  pieceSpacingY: 220
+  moveSpeed: -300
+  waterDropYOffset: 40
   piecePrefab:
   - {fileID: 183217177537340231, guid: 06b66663e54663e4d950939f92083cd8, type: 3}
   - {fileID: 183217177537340231, guid: 026949b2a2542ab4dbc5251766d08e02, type: 3}
@@ -9253,16 +9284,21 @@ MonoBehaviour:
   - {fileID: 183217177537340231, guid: d5c0df2265e00c447899f341cbc4b913, type: 3}
   - {fileID: 183217177537340231, guid: 30cf6e26bb376e44ca5efb15c7f78268, type: 3}
   pieceWeighting:
+  - 0.5
+  - 0.5
   - 1
   - 1
   - 1
   - 1
   - 1
   - 1
-  - 1
-  - 1
+  waterDropPrefabs:
+  - {fileID: 5125494105864510496, guid: d45d31e7b2f77db448303e921089ff3b, type: 3}
+  - {fileID: 3580790486826315860, guid: 62acdf33346024849b5e8a66a9bd38cc, type: 3}
   placedPiecesContainer: {fileID: 1664140811}
+  waterDropsContainer: {fileID: 580131972}
   gameBoard: {fileID: 1434374206}
+  distDropDestroy: 300
 --- !u!114 &1403962583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9474,6 +9510,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f28d4fb68b38f048b214662e5be6307, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startingXPosition: 3
+  startingYPosition: 4
 --- !u!1 &1439490901
 GameObject:
   m_ObjectHideFlags: 0
@@ -12706,7 +12744,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1996975705
 GameObject:
@@ -14240,7 +14278,7 @@ PrefabInstance:
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
