@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: befce0adfeb77d44b9c94f8887e6fc9f
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Occupied
+  fontNames:
+  - Occupied
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: af978d7d60514e8428528d902dcb1a5d, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
