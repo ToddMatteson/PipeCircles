@@ -7,9 +7,10 @@ namespace PipeCircles
 {
 	public class Timer : MonoBehaviour
 	{
-		[SerializeField] TextMeshProUGUI timerText;
 		[SerializeField] float timePenalty = 3f;
 		[SerializeField] float startingTime = 40f;
+
+		GameObject timerText;
 
 		float timeRemaining;
 		bool timerRunning = false;
@@ -35,6 +36,7 @@ namespace PipeCircles
 
 		private void Start()
 		{
+			timerText = GameObject.FindGameObjectWithTag("TimerText");
 			ResetTimer();
 		}
 
@@ -71,7 +73,7 @@ namespace PipeCircles
 					timeRemaining -= Time.deltaTime;
 				}
 			}
-			timerText.text = Mathf.Round(timeRemaining).ToString();
+			timerText.GetComponent<TextMeshProUGUI>().text = Mathf.Round(timeRemaining).ToString();
 		}
 
 		public void ApplyTimerPenalty()

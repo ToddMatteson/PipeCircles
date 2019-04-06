@@ -165,9 +165,24 @@ namespace PipeCircles
 				Direction startingDirection = FindStartingDirection(activePieceTransform);
 				SetAnimatorEvents(animator, startingDirection);
 				activePieceTransform.gameObject.tag = "Untagged"; //Prevents the piece from being replaced by another
+				FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 				animationComplete = false;
 				waterFlowIndex++;
+			} else
+			{
+				LevelOver();
 			}
+		}
+
+		private void LevelOver()
+		{
+			Piece[] allPieces = FindObjectsOfType<Piece>();
+			foreach (Piece piece in allPieces)
+			{
+				piece.gameObject.tag = "Untagged";
+			}
+			//TODO What to do about a piece being dragged? Just delete it? Shouldn't charge player for it as an unused piece
+			//TODO Bring up the round scoring explanation screen
 		}
 
 		private Direction FindStartingDirection(Transform activePieceTransform)
