@@ -48,6 +48,6 @@ MonoBehaviour:
   loopScore: 100
   loopTierBonus: 200
   pieceTraveledScore: 20
-  specialItemScore: 10
-  endReachedScore: 10
+  specialItemScore: 50
+  endReachedScore: 100
   unusedPieceScore: -10

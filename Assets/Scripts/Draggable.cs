@@ -126,7 +126,11 @@ namespace PipeCircles
 
 		private void PlayPiecePlacedVFX()
 		{
-			
+			Animator animator = objectToDrag.gameObject.GetComponent<Animator>();
+			if (animator != null)
+			{
+				animator.SetTrigger("PlayVFX");
+			}
 		}
 	}
 }

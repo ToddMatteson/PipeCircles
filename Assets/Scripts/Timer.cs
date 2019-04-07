@@ -83,6 +83,7 @@ namespace PipeCircles
 
 		public void SwitchSpeed()
 		{
+			print("Inside SwitchSpeed");
 			speedUp = !speedUp;
 		}
 

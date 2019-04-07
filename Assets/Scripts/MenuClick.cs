@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class MenuClick : MonoBehaviour
 {
+	[SerializeField] GameObject mainMenuPanel;
+
 	public void OnMouseUp()
 	{
 		print("reached OnMouseUp");
-		//TODO open up menu when clicked
+		if (mainMenuPanel != null)
+		{
+			mainMenuPanel.SetActive(true);
+		}
 	}
 }

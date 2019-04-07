@@ -11,6 +11,7 @@ namespace PipeCircles
 		private const int BOARD_UNITS_WIDE = 12;
 		private const int BOARD_UNITS_HIGH = 9;
 		private const int PIXELS_PER_BOARD_UNIT = 100;
+		private const string UNTAGGED_TAG = "Untagged";
 
 		[Range (0, BOARD_UNITS_WIDE - 1)]
 		[SerializeField] int startingXPosition = 3;
@@ -164,7 +165,7 @@ namespace PipeCircles
 				Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
 				Direction startingDirection = FindStartingDirection(activePieceTransform);
 				SetAnimatorEvents(animator, startingDirection);
-				activePieceTransform.gameObject.tag = "Untagged"; //Prevents the piece from being replaced by another
+				activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 				FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 				animationComplete = false;
 				waterFlowIndex++;
@@ -179,7 +180,7 @@ namespace PipeCircles
 			Piece[] allPieces = FindObjectsOfType<Piece>();
 			foreach (Piece piece in allPieces)
 			{
-				piece.gameObject.tag = "Untagged";
+				piece.gameObject.tag = UNTAGGED_TAG;
 			}
 			//TODO What to do about a piece being dragged? Just delete it? Shouldn't charge player for it as an unused piece
 			//TODO Bring up the round scoring explanation screen

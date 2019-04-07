@@ -406,8 +406,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -517, y: -56.2}
-  m_SizeDelta: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -517, y: -57}
+  m_SizeDelta: {x: 0.81, y: 1.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &23915570
 GameObject:
@@ -2984,6 +2984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d5e14d022a765741b711632b5761e57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainMenuPanel: {fileID: 0}
 --- !u!1 &423484455
 GameObject:
   m_ObjectHideFlags: 0
@@ -12166,16 +12167,6 @@ PrefabInstance:
       propertyPath: loopsText
       value: 
       objectReference: {fileID: 1105405381}
-    - target: {fileID: 7428290389973359363, guid: 89acdc8e5d9c01041851049ed63573ac,
-        type: 3}
-      propertyPath: specialItemScore
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 7428290389973359363, guid: 89acdc8e5d9c01041851049ed63573ac,
-        type: 3}
-      propertyPath: endReachedScore
-      value: 100
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 89acdc8e5d9c01041851049ed63573ac, type: 3}
 --- !u!1 &1987593201
