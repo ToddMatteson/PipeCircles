@@ -78,7 +78,7 @@ namespace PipeCircles
 					}
 
 					objectToDrag.GetComponent<Collider2D>().enabled = true; //Allowing raycasts to hit the piece again
-					objectToDrag.GetComponent<SpriteRenderer>().sortingOrder = originalSortingOrder;
+					objectToDrag.GetComponent<SpriteRenderer>().sortingOrder = originalSortingOrder - 1;
 					objectToDrag = null;
 				}
 				dragging = false;
