@@ -259,7 +259,7 @@ namespace PipeCircles
 			Transform pieceClicked = upcomingPieces[0];
 			pieceClicked.SetParent(placedPiecesContainer);
 			pieceClicked.SetAsLastSibling();
-			gameBoard.GetComponent<Board>().AddPieceToBoard(pieceClicked);
+			gameBoard.GetComponent<Board>().AddPieceToBoardInWorldUnits(pieceClicked);
 		}
 
 		private void DisposeOfUsedWaterDrop()

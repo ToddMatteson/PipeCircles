@@ -13,11 +13,9 @@ namespace PipeCircles
 		private const int PIXELS_PER_BOARD_UNIT = 100;
 		private const string UNTAGGED_TAG = "Untagged";
 
-		[Range (0, BOARD_UNITS_WIDE - 1)]
-		[SerializeField] int startingXPosition = 3;
-		[Range (0, BOARD_UNITS_HIGH - 1)]
-		[SerializeField] int startingYPosition = 4;
-		Vector2Int startingPosition;
+		[Header("Preplaced Pieces")]
+		[SerializeField] Transform[] preplacedPieces;
+		[SerializeField] Vector2Int[] preplacedPositions;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
@@ -46,9 +44,9 @@ namespace PipeCircles
 
 		private void Start()
 		{
-			startingPosition = new Vector2Int(startingXPosition, startingYPosition);
 			AddToDictionary();
 			ClearBoard();
+			AddPreplacedPieces();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
 		}
 
@@ -78,9 +76,33 @@ namespace PipeCircles
 			}
 		}
 
-		public void AddPieceToBoard(Transform transformToAdd) 
+		private void AddPreplacedPieces()
+		{
+			if (preplacedPieces.Length != preplacedPositions.Length)
+			{
+				Debug.LogError("preplacedPieces is not the same length as preplacedPositions");
+			}
+
+			if (preplacedPieces.Length == 0)
+			{
+				Debug.LogError("Please add a starting piece to the GameBoard");
+			}
+
+			for(int i = 0; i < preplacedPieces.Length; i++)
+			{
+				if (preplacedPieces[i] == null || preplacedPositions[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
+				AddPieceToBoardInBoardUnits(preplacedPieces[i], preplacedPositions[i]);
+			}
+		}
+
+		public void AddPieceToBoardInWorldUnits(Transform transformToAdd) 
 		{
 			Vector2Int boardPos = CalcBoardPos(transformToAdd);
+			AddPieceToBoardInBoardUnits(transformToAdd, boardPos);
+		}
+
+		public void AddPieceToBoardInBoardUnits(Transform transformToAdd, Vector2Int boardPos)
+		{
 			if (CheckValidBoardPos(boardPos))
 			{
 				board[boardPos.x, boardPos.y] = transformToAdd;
@@ -110,9 +132,9 @@ namespace PipeCircles
 		{
 			bool done = false;
 			List<Transform> pathFromStart = new List<Transform>();
-			if (board[startingPosition.x, startingPosition.y] == null) { return pathFromStart; } //No starting piece => no path
+			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return pathFromStart; } //No starting piece => no path
 
-			pathFromStart.Add(board[startingPosition.x, startingPosition.y]);
+			pathFromStart.Add(board[preplacedPositions[0].x, preplacedPositions[0].y]);
 			Direction exitDirection = pathFromStart[0].GetComponent<Piece>().GetTopGoesWhere(); //TODO read in the start piece's exit direction
 			while (!done)
 			{
