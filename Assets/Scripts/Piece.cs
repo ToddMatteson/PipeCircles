@@ -16,11 +16,17 @@ namespace PipeCircles
 		[SerializeField] bool canWaterEnterBottom = false;
 		[SerializeField] bool canWaterEnterLeft = false;
 
-		[Header("Paths Available")]
-		[SerializeField] Direction topGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction rightGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction bottomGoesWhere = Direction.Nowhere;
-		[SerializeField] Direction leftGoesWhere = Direction.Nowhere;
+		[Header("Primary Path")]
+		[SerializeField] Direction topLeads = Direction.Nowhere;
+		[SerializeField] Direction rightLeads = Direction.Nowhere;
+		[SerializeField] Direction bottomLeads = Direction.Nowhere;
+		[SerializeField] Direction leftLeads = Direction.Nowhere;
+
+		[Header("Secondary Path")]
+		[SerializeField] Direction secondTopLeads = Direction.Nowhere;
+		[SerializeField] Direction secondRightLeads = Direction.Nowhere;
+		[SerializeField] Direction secondBottomLeads = Direction.Nowhere;
+		[SerializeField] Direction secondLeftLeads = Direction.Nowhere;
 
 		[Header("Cross Sprites")]
 		[SerializeField] Sprite leftOverVertical;
@@ -58,28 +64,42 @@ namespace PipeCircles
 			}
 		}
 
-		public Direction GetTopGoesWhere() { return topGoesWhere; }
-		public Direction GetRightGoesWhere() { return rightGoesWhere; }
-		public Direction GetBottomGoesWhere() { return bottomGoesWhere; }
-		public Direction GetLeftGoesWhere() { return leftGoesWhere; }
+		public Direction GetTopLeads() { return topLeads; }
+		public Direction GetRightLeads() { return rightLeads; }
+		public Direction GetBottomLeads() { return bottomLeads; }
+		public Direction GetLeftLeads() { return leftLeads; }
 
-		public Direction WhereWaterExits(Direction entranceDirection)
+		public Direction FirstExitDirection(Direction entranceDirection) //Note this is done differently than Second direction due to complication of crosses
 		{
 			switch (entranceDirection)
 			{
 				case Direction.Top:
-					return topGoesWhere;
+					return topLeads;
 				case Direction.Right:
-					return rightGoesWhere;
+					return rightLeads;
 				case Direction.Bottom:
-					return bottomGoesWhere;
+					return bottomLeads;
 				case Direction.Left:
-					return leftGoesWhere;
+					return leftLeads;
 				case Direction.Nowhere:
 					return Direction.Nowhere;
 				default:
 					return Direction.Nowhere;
 			}
+		}
+
+		public bool HasSecondExitDirection()
+		{
+			return (SecondExitDirection() != Direction.Nowhere);
+		}
+
+		public Direction SecondExitDirection() //Note this is done differently than First direction because First has complications due to crosses
+		{
+			if (secondTopLeads != Direction.Nowhere) { return secondTopLeads; }
+			if (secondRightLeads != Direction.Nowhere) { return secondRightLeads; }
+			if (secondBottomLeads != Direction.Nowhere) { return secondBottomLeads; }
+			if (secondLeftLeads != Direction.Nowhere) { return secondLeftLeads; }
+			return Direction.Nowhere;
 		}
 
 		public void AnimationComplete() //Called by animations

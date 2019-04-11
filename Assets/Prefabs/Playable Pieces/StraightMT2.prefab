@@ -74,7 +74,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1858055451
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: f2344796bfedf9148beaa5c0cbcf3a04, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -103,10 +103,14 @@ MonoBehaviour:
   canWaterEnterRight: 1
   canWaterEnterBottom: 0
   canWaterEnterLeft: 1
-  topGoesWhere: 0
-  rightGoesWhere: 4
-  bottomGoesWhere: 0
-  leftGoesWhere: 2
+  topLeads: 0
+  rightLeads: 4
+  bottomLeads: 0
+  leftLeads: 2
+  secondTopLeads: 0
+  secondRightLeads: 0
+  secondBottomLeads: 0
+  secondLeftLeads: 0
   leftOverVertical: {fileID: 0}
   leftOverHorizontal: {fileID: 0}
   leftOverFull: {fileID: 0}

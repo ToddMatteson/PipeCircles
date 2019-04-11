@@ -19,8 +19,9 @@ namespace PipeCircles
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
-		List<Transform> pathFromStart = new List<Transform>();
+		List<List<Transform>> pathFromStart = new List<List<Transform>>();
 		bool animationComplete = true;
+		int numSplits = 0;
 		int waterFlowIndex = 0;
 		Timer timer;
 
@@ -128,33 +129,83 @@ namespace PipeCircles
 			return true;
 		}
 
-		private List<Transform> FindPathFromStart()
+		private List<List<Transform>> FindPathFromStart()
 		{
-			bool done = false;
-			List<Transform> pathFromStart = new List<Transform>();
-			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return pathFromStart; } //No starting piece => no path
+			List<List<Transform>> pathFromStart = new List<List<Transform>>();
 
-			pathFromStart.Add(board[preplacedPositions[0].x, preplacedPositions[0].y]);
-			Direction exitDirection = pathFromStart[0].GetComponent<Piece>().GetTopGoesWhere(); //TODO read in the start piece's exit direction
+			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return pathFromStart; } //No starting piece => no path
+			pathFromStart[0].Add(board[preplacedPositions[0].x, preplacedPositions[0].y]);
+
+			FindColumnPath(pathFromStart, Direction.Nowhere, 0);
+			return pathFromStart;
+		}
+
+		private void FindColumnPath(List<List<Transform>> pathFromStart, Direction secondaryExitDirection, int oldColumn)
+		{
+			int currentColumn = numSplits;
+			Direction firstExitDirection = FirstEntranceConditions(pathFromStart, secondaryExitDirection);
+			Direction secondExitDirection = SecondEntranceConditions(pathFromStart);
+			bool done = false;
 			while (!done)
 			{
-				if (exitDirection == Direction.Nowhere) { return pathFromStart; } //Water doesn't exit => no more path
+				if (firstExitDirection == Direction.Nowhere) { return; } //Water doesn't exit => no more path
+				if (secondExitDirection != Direction.Nowhere) //Splitter detected
+				{
+					numSplits++;
+					FindColumnPath(pathFromStart, secondExitDirection, currentColumn);
+				}
 
-				int newBoardPosX = dirToVector2[exitDirection].x + CalcBoardPos(pathFromStart[pathFromStart.Count - 1]).x;
-				int newBoardPosY = dirToVector2[exitDirection].y + CalcBoardPos(pathFromStart[pathFromStart.Count - 1]).y;
-				Vector2 newBoardPos = new Vector2(newBoardPosX, newBoardPosY);
+				Vector2Int newBoardPos = GetNewBoardPos(firstExitDirection, currentColumn, oldColumn);
+			
+				if (!CheckValidBoardPos(newBoardPos)) { return; } //Piece on edge of board => no more path
+				if (board[newBoardPos.x, newBoardPos.y] == null) { return; } //No piece placed yet => no more path
 
-				if (!CheckValidBoardPos(newBoardPos)) { return pathFromStart; } //Piece on edge of board => no more path
-				if (board[newBoardPosX, newBoardPosY] == null) { return pathFromStart; } //No piece placed yet => no more path
-
-				Direction entranceDirection = ReverseDirection(exitDirection);
-				if (!board[newBoardPosX, newBoardPosY].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return pathFromStart; } //Piece is turned wrong way => no more path
+				Direction entranceDirection = ReverseDirection(firstExitDirection);
+				if (!board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
 
 				//Now have a valid piece, can add it to the path list
-				pathFromStart.Add(board[newBoardPosX, newBoardPosY]);
-				exitDirection = board[newBoardPosX, newBoardPosY].GetComponent<Piece>().WhereWaterExits(entranceDirection);
+				pathFromStart[currentColumn].Add(board[newBoardPos.x, newBoardPos.y]);
+				firstExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().FirstExitDirection(entranceDirection);
+				secondExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().SecondExitDirection();
 			}
-			return pathFromStart; //Should be unreachable
+		}
+
+		private Direction FirstEntranceConditions(List<List<Transform>> pathFromStart, Direction secondaryExitDirection)
+		{
+			if(numSplits == 0)
+			{
+				return pathFromStart[0][0].GetComponent<Piece>().GetTopLeads();
+			} else
+			{
+				return secondaryExitDirection;
+			}
+		}
+
+		private Direction SecondEntranceConditions(List<List<Transform>> pathFromStart)
+		{
+			if (numSplits == 0)
+			{
+				return pathFromStart[0][0].GetComponent<Piece>().SecondExitDirection();
+			} else
+			{
+				return Direction.Nowhere;
+			}
+		}
+
+		private Vector2Int GetNewBoardPos(Direction firstExitDirection, int currentColumn, int oldColumn)
+		{
+			int newBoardPosX;
+			int newBoardPosY;
+			if (pathFromStart[currentColumn].Count > 0)
+			{
+				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(pathFromStart[currentColumn][pathFromStart[currentColumn].Count - 1]).x;
+				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(pathFromStart[currentColumn][pathFromStart[currentColumn].Count - 1]).y;
+			} else
+			{
+				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(pathFromStart[oldColumn][pathFromStart[oldColumn].Count - 1]).x;
+				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(pathFromStart[oldColumn][pathFromStart[oldColumn].Count - 1]).y;
+			}
+			return new Vector2Int(newBoardPosX, newBoardPosY);
 		}
 
 		private Direction ReverseDirection(Direction directionToReverse)
@@ -181,9 +232,9 @@ namespace PipeCircles
 			if (timer.GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
 			if (!animationComplete) { return; } //Only want one instance of WaterFlows to be waiting on an animation to finish
 
-			if (waterFlowIndex < pathFromStart.Count)
+			if (waterFlowIndex < pathFromStart[0].Count)  //Remove reference to [0] to return to pre-splitter
 			{
-				Transform activePieceTransform = pathFromStart[waterFlowIndex];
+				Transform activePieceTransform = pathFromStart[0][waterFlowIndex];  //Remove reference to [0] to return to pre-splitter
 				Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
 				Direction startingDirection = FindStartingDirection(activePieceTransform);
 				SetAnimatorEvents(animator, startingDirection);
@@ -215,7 +266,7 @@ namespace PipeCircles
 				return Direction.Top; //TODO fix this
 			} else
 			{
-				Transform previousPieceTransform = pathFromStart[waterFlowIndex - 1];
+				Transform previousPieceTransform = pathFromStart[0][waterFlowIndex - 1]; //Remove reference to [0] to return to pre-splitter
 				Vector2 previousPieceBoardPos = CalcBoardPos(previousPieceTransform);
 				Vector2 activePieceBoardPos = CalcBoardPos(activePieceTransform);
 				Vector2 differenceBoardPos = activePieceBoardPos - previousPieceBoardPos;

@@ -103,10 +103,14 @@ MonoBehaviour:
   canWaterEnterRight: 0
   canWaterEnterBottom: 0
   canWaterEnterLeft: 0
-  topGoesWhere: 2
-  rightGoesWhere: 0
-  bottomGoesWhere: 0
-  leftGoesWhere: 0
+  topLeads: 2
+  rightLeads: 0
+  bottomLeads: 0
+  leftLeads: 0
+  secondTopLeads: 4
+  secondRightLeads: 0
+  secondBottomLeads: 0
+  secondLeftLeads: 0
   leftOverVertical: {fileID: 0}
   leftOverHorizontal: {fileID: 0}
   leftOverFull: {fileID: 0}
