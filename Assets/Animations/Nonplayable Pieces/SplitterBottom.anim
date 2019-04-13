@@ -308,7 +308,7 @@ AnimationClip:
   m_Events:
   - time: 3.3333333
     functionName: AnimationComplete
-    data: 
+    data: Bottom
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

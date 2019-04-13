@@ -102,14 +102,34 @@ namespace PipeCircles
 			return Direction.Nowhere;
 		}
 
-		public void AnimationComplete() //Called by animations
-		{
-			board.AnimationComplete();
-		}
-
 		public void LoopCompleted() //Called by animations
 		{
 			scoring.LoopCompleted();
+		}
+		
+		public void AnimationComplete(string startingDirection) //Called by animations
+		{
+			Direction startDirection = GetStartingDirection(startingDirection);
+			board.AnimationComplete(gameObject.transform, startDirection);
+		}
+
+		private Direction GetStartingDirection(string startingDirection)
+		{
+			switch (startingDirection)
+			{
+				case "Top":
+					return Direction.Top;
+				case "Right":
+					return Direction.Right;
+				case "Bottom":
+					return Direction.Bottom;
+				case "Left":
+					return Direction.Left;
+				case "Nowhere":
+					return Direction.Nowhere;
+				default:
+					return Direction.Nowhere;
+			}
 		}
 	}
 

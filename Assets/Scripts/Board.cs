@@ -19,10 +19,12 @@ namespace PipeCircles
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
-		List<List<Transform>> pathFromStart = new List<List<Transform>>();
-		bool animationComplete = true;
+		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
+		Dictionary<PathTransformDirection, bool> animStartedDict = new Dictionary<PathTransformDirection, bool>();
+		Dictionary<PathTransformDirection, bool> animDoneDict = new Dictionary<PathTransformDirection, bool>();
+
+		bool waterFlowStarted = false;
 		int numSplits = 0;
-		int waterFlowIndex = 0;
 		Timer timer;
 
 		private void Awake()
@@ -45,19 +47,20 @@ namespace PipeCircles
 
 		private void Start()
 		{
-			AddToDictionary();
+			AddToVectorDictionary();
 			ClearBoard();
-			AddPreplacedPieces();
+			ClearAnimDicts();
+			AddPreplacedPiecesToBoard();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
 		}
 
 		private void Update()
 		{
 			pathFromStart = FindPathFromStart();
-			WaterFlows();
+			WaterStarts();
 		}
 
-		private void AddToDictionary()
+		private void AddToVectorDictionary()
 		{
 			dirToVector2.Add(Direction.Top, new Vector2Int(0, 1));
 			dirToVector2.Add(Direction.Right, new Vector2Int(1, 0));
@@ -77,7 +80,13 @@ namespace PipeCircles
 			}
 		}
 
-		private void AddPreplacedPieces()
+		private void ClearAnimDicts()
+		{
+			animStartedDict.Clear();
+			animDoneDict.Clear();
+		}
+
+		private void AddPreplacedPiecesToBoard()
 		{
 			if (preplacedPieces.Length != preplacedPositions.Length)
 			{
@@ -129,19 +138,20 @@ namespace PipeCircles
 			return true;
 		}
 
-		private List<List<Transform>> FindPathFromStart()
+		private List<List<PathTransformDirection>> FindPathFromStart()
 		{
 			numSplits = 0;
-			List<List<Transform>> path = new List<List<Transform>>();
+			List<List<PathTransformDirection>> path = new List<List<PathTransformDirection>>();
 			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return path; } //No starting piece => no path
-			path.Add(new List<Transform>());
-			path[0].Add(board[preplacedPositions[0].x, preplacedPositions[0].y]);
+			path.Add(new List<PathTransformDirection>());
+			path[0].Add(new PathTransformDirection(board[preplacedPositions[0].x, preplacedPositions[0].y], Direction.Top));
 
 			FindColumnPath(path, Direction.Nowhere, 0);
+			UpdateAnimDictionaries();
 			return path;
 		}
 
-		private void FindColumnPath(List<List<Transform>> path, Direction secondaryExitDirection, int oldColumn)
+		private void FindColumnPath(List<List<PathTransformDirection>> path, Direction secondaryExitDirection, int oldColumn)
 		{
 			int currentColumn = numSplits;
 			Direction firstExitDirection = FirstEntranceConditions(path, secondaryExitDirection);
@@ -158,7 +168,7 @@ namespace PipeCircles
 
 				if (currentColumn >= path.Count) //New column needed before GetNewBoardPos checks it
 				{
-					path.Add(new List<Transform>());
+					path.Add(new List<PathTransformDirection>());
 				}
 
 				Vector2Int newBoardPos = GetNewBoardPos(path, firstExitDirection, currentColumn, oldColumn);
@@ -170,46 +180,46 @@ namespace PipeCircles
 				if (!board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
 
 				//Now have a valid piece, can add it to the path list
-				path[currentColumn].Add(board[newBoardPos.x, newBoardPos.y]);
+				path[currentColumn].Add(new PathTransformDirection(board[newBoardPos.x, newBoardPos.y], entranceDirection));
 				firstExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().FirstExitDirection(entranceDirection);
 				secondExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().SecondExitDirection();
 			}
 		}
 
-		private Direction FirstEntranceConditions(List<List<Transform>> path, Direction secondaryExitDirection)
+		private Direction FirstEntranceConditions(List<List<PathTransformDirection>> path, Direction secondaryExitDirection)
 		{
 			if(numSplits == 0)
 			{
-				return path[0][0].GetComponent<Piece>().GetTopLeads();
+				return path[0][0].pathTransform.GetComponent<Piece>().GetTopLeads();
 			} else
 			{
 				return secondaryExitDirection;
 			}
 		}
 
-		private Direction SecondEntranceConditions(List<List<Transform>> path)
+		private Direction SecondEntranceConditions(List<List<PathTransformDirection>> path)
 		{
 			if (numSplits == 0)
 			{
-				return path[0][0].GetComponent<Piece>().SecondExitDirection();
+				return path[0][0].pathTransform.GetComponent<Piece>().SecondExitDirection();
 			} else
 			{
 				return Direction.Nowhere;
 			}
 		}
 
-		private Vector2Int GetNewBoardPos(List<List<Transform>> path, Direction firstExitDirection, int currentColumn, int oldColumn)
+		private Vector2Int GetNewBoardPos(List<List<PathTransformDirection>> path, Direction firstExitDirection, int currentColumn, int oldColumn)
 		{
 			int newBoardPosX;
 			int newBoardPosY;
 			if (path[currentColumn].Count > 0)
 			{
-				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1]).x;
-				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1]).y;
+				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).x;
+				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).y;
 			} else
 			{
-				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1]).x;
-				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1]).y;
+				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).x;
+				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).y;
 			}
 			return new Vector2Int(newBoardPosX, newBoardPosY);
 		}
@@ -233,57 +243,51 @@ namespace PipeCircles
 			}
 		}
 
-		private void WaterFlows()
+		private void UpdateAnimDictionaries()
 		{
-			if (timer.GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
-			if (!animationComplete) { return; } //Only want one instance of WaterFlows to be waiting on an animation to finish
-
-			if (waterFlowIndex < pathFromStart[0].Count)
+			for (int i = 0; i < pathFromStart.Count; i++)
 			{
-				Transform activePieceTransform = pathFromStart[0][waterFlowIndex];
-				Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
-				Direction startingDirection = FindStartingDirection(activePieceTransform);
-				SetAnimatorEvents(animator, startingDirection);
-				activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
-				FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
-				animationComplete = false;
-				waterFlowIndex++;
-			} else
-			{
-				LevelOver();
+				for (int j = 0; j < pathFromStart[i].Count; j++)
+				{
+					if (!animStartedDict.ContainsKey(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Top)))
+					{
+						animStartedDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Top), false);
+						animStartedDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Right), false);
+						animStartedDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Bottom), false);
+						animStartedDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Left), false);
+						animDoneDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Top), false);
+						animDoneDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Right), false);
+						animDoneDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Bottom), false);
+						animDoneDict.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Left), false);
+					}
+				}
 			}
 		}
 
-		private Direction FindStartingDirection(Transform activePieceTransform)
-		{
-			if (waterFlowIndex == 0)
-			{
-				return Direction.Top; //TODO fix this
-			} else
-			{
-				Transform previousPieceTransform = pathFromStart[0][waterFlowIndex - 1];
-				Vector2 previousPieceBoardPos = CalcBoardPos(previousPieceTransform);
-				Vector2 activePieceBoardPos = CalcBoardPos(activePieceTransform);
-				Vector2 differenceBoardPos = activePieceBoardPos - previousPieceBoardPos;
+		private void WaterStarts()
+		{	//Imagine a cross getting traversed from orthogonal directions at almost the same time.
+			//Does this mean that I might have to do additional GIMP animations for this?
+			//What about water coming from both ends of a simple curve piece? Does this cause issues for pathfinding, too? 
 
-				if (differenceBoardPos.x == 1)
-				{
-					return Direction.Left;
-				} else if (differenceBoardPos.x == -1)
-				{
-					return Direction.Right;
-				} else if (differenceBoardPos.y == 1)
-				{
-					return Direction.Bottom;
-				} else if (differenceBoardPos.y == -1)
-				{
-					return Direction.Top;
-				} else
-				{
-					Debug.LogError("startingDirection unknown");
-					return Direction.Nowhere;
-				}
+			if (timer.GetTimeRemaining() > 0.02f) { return; } //Water doesn't start until timer hits zero, so nothing to traverse
+			if (!waterFlowStarted)
+			{
+				waterFlowStarted = true;
+				if (pathFromStart.Count == 0 || pathFromStart[0].Count == 0)
+				{ LevelOver(); } //No starting piece, so just kill the round
+				Transform activePieceTransform = pathFromStart[0][0].pathTransform;
+				StartCoreAnimation(activePieceTransform, 0, 0);
 			}
+		}
+
+		private void StartCoreAnimation(Transform activePieceTransform, int colIndex, int rowIndex)
+		{
+			Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
+			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
+			SetAnimatorEvents(animator, startingDirection);
+			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
+			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
+			animStartedDict[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = true;
 		}
 
 		private void SetAnimatorEvents(Animator animator, Direction startingDirection)
@@ -291,6 +295,129 @@ namespace PipeCircles
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
 			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
 			animator.SetTrigger("Transition");
+		}
+
+		private List<PathTransformDirection> FindCurrentlyActiveAnimations()
+		{
+			List<PathTransformDirection> activeAnimations = new List<PathTransformDirection>();
+			foreach (KeyValuePair<PathTransformDirection, bool> i in animStartedDict)
+			{
+				if (animDoneDict.ContainsKey(i.Key) && i.Value != animDoneDict[i.Key])
+				{
+					activeAnimations.Add(i.Key);
+				}
+			}
+
+			return activeAnimations;
+		}
+
+		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
+		{
+			Vector2Int completedIndexes = FindCompletedIndexes(transformAnimComplete, startingDirection);
+			int activeColumn = completedIndexes.x;
+			int activeRow = completedIndexes.y;
+			PathTransformDirection completedAnim = new PathTransformDirection(pathFromStart[activeColumn][activeRow].pathTransform, startingDirection);
+			animDoneDict[completedAnim] = true;
+			Transform activeTransform = completedAnim.pathTransform;
+			Piece activePiece = activeTransform.GetComponent<Piece>();
+			Direction secondExitDirection = activePiece.SecondExitDirection();
+			bool isSplitter = secondExitDirection != Direction.Nowhere;
+
+			bool primaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
+			bool secondaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
+
+			if (!isSplitter)
+			{   			
+				if (activeRow < pathFromStart[activeColumn].Count) //Check for next element
+				{
+					StartCoreAnimation(activeTransform, activeColumn, activeRow + 1);
+				} else
+				{
+					LevelOver();
+				}
+			} else
+			{
+				//Primary path
+				if (activeRow < pathFromStart[activeColumn].Count) //Check for next primary element
+				{
+					StartCoreAnimation(activeTransform, activeColumn, activeRow + 1);
+				} else
+				{
+					primaryElementMissing = true;
+				}
+
+				//Secondary path
+				int currentXPos = CalcBoardPos(pathFromStart[activeColumn][activeRow].pathTransform).x;
+				int newBoardPosX = dirToVector2[secondExitDirection].x + currentXPos;
+				int currentYPos = CalcBoardPos(pathFromStart[activeColumn][activeRow].pathTransform).y;
+				int newBoardPosY = dirToVector2[secondExitDirection].y + currentYPos;
+				Vector2Int newBoardPos = new Vector2Int(newBoardPosX, newBoardPosY);
+
+				if(CheckValidBoardPos(newBoardPos)
+				   && board[newBoardPos.x, newBoardPos.y] != null
+				   && board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().CanWaterEnter(ReverseDirection(secondExitDirection))) 
+				{   
+					//Valid piece now exists at the second exit direction
+					Direction entranceDirection = ReverseDirection(secondExitDirection);
+					PathTransformDirection newLocation = new PathTransformDirection(board[newBoardPosX, newBoardPosY], entranceDirection);
+					Vector2Int newSpot = FindNewPathIndexes(newLocation);
+					Transform transformToStartAnim = pathFromStart[newSpot.x][newSpot.y].pathTransform;
+					StartCoreAnimation(transformToStartAnim, newSpot.x, newSpot.y);
+				} else
+				{
+					secondaryElementMissing = true;
+				}
+
+				if (primaryElementMissing && secondaryElementMissing)
+				{
+					//TODO Maybe call LevelOver here, unknown at this point
+				}
+			}
+		}
+		
+		private Vector2Int FindCompletedIndexes(Transform transformAnimComplete, Direction startingDirection)
+		{
+			List<PathTransformDirection> activeAnimations = FindCurrentlyActiveAnimations();
+			PathTransformDirection completedAnim = new PathTransformDirection(transformAnimComplete, startingDirection);
+
+			if (!activeAnimations.Contains(completedAnim))
+			{
+				Debug.LogError("Completed animation not found in active animations list");
+			}
+
+			int completedColumn = 0;
+			int completedRow = 0;
+			for (int i = 0; i < pathFromStart.Count; i++)
+			{
+				for (int j = 0; j < pathFromStart[i].Count; j++)
+				{
+					if (pathFromStart[i][j].pathTransform == completedAnim.pathTransform
+						&& pathFromStart[i][j].direction == completedAnim.direction)
+					{
+						completedColumn = i;
+						completedRow = j;
+					}
+				}
+			}
+			return new Vector2Int(completedColumn, completedRow);
+		}
+
+		private Vector2Int FindNewPathIndexes(PathTransformDirection newLocation) {
+			int newPathColumn = 0;
+			int newPathRow = 0;
+			for (int i = 0; i < pathFromStart.Count; i++)
+			{
+				for (int j = 0; j < pathFromStart[i].Count; j++)
+				{
+					if (pathFromStart[i][j].pathTransform == newLocation.pathTransform
+						&& pathFromStart[i][j].direction == newLocation.direction)
+					{
+						newPathColumn = i;
+						newPathRow = j;
+					}
+				}
+			}
+			return new Vector2Int(newPathColumn, newPathRow);
 		}
 
 		private void LevelOver()
@@ -303,10 +430,31 @@ namespace PipeCircles
 			//TODO What to do about a piece being dragged? Just delete it? Shouldn't charge player for it as an unused piece
 			//TODO Bring up the round scoring explanation screen
 		}
+	}
 
-		public void AnimationComplete()
+	struct PathTransformDirection
+	{
+		public Transform pathTransform;
+		public Direction direction;
+
+		public PathTransformDirection (Transform pathTransforms, Direction dir)
 		{
-			animationComplete = true;
+			pathTransform = pathTransforms;
+			direction = dir;
+		}
+	}
+
+	struct PathIndexesDirection
+	{
+		public int columnIndex;
+		public int rowIndex;
+		public Direction direction;
+
+		public PathIndexesDirection (int col, int row, Direction dir)
+		{
+			columnIndex = col;
+			rowIndex = row;
+			direction = dir;
 		}
 	}
 }

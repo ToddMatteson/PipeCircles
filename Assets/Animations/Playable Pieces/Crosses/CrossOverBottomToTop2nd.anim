@@ -372,7 +372,7 @@ AnimationClip:
     messageOptions: 0
   - time: 4.125
     functionName: AnimationComplete
-    data: 
+    data: Bottom
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
