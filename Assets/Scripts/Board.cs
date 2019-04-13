@@ -273,8 +273,7 @@ namespace PipeCircles
 			if (!waterFlowStarted)
 			{
 				waterFlowStarted = true;
-				if (pathFromStart.Count == 0 || pathFromStart[0].Count == 0)
-				{ LevelOver(); } //No starting piece, so just kill the round
+				if (pathFromStart.Count == 0 || pathFromStart[0].Count == 0) { LevelOver(); } //No starting piece, so just kill the round
 				Transform activePieceTransform = pathFromStart[0][0].pathTransform;
 				StartCoreAnimation(activePieceTransform, 0, 0);
 			}
@@ -326,21 +325,31 @@ namespace PipeCircles
 			bool primaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
 			bool secondaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
 
+			/*^^^^ DEBUG purposes
+			print("Active Column: " + activeColumn.ToString());
+			print("Active Row: " + activeRow.ToString());
+			print("Length of main path: " + pathFromStart[0].Count);
+			print("Number of columns in pathFromStart: " + pathFromStart.Count);
+			print("Is Splitter: " + isSplitter.ToString());
+			*/
+
 			if (!isSplitter)
-			{   			
-				if (activeRow < pathFromStart[activeColumn].Count) //Check for next element
+			{
+				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element
 				{
-					StartCoreAnimation(activeTransform, activeColumn, activeRow + 1);
+					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
+					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
 				} else
 				{
-					LevelOver();
+					//LevelOver(); //Could be level over here depending on the rules I want to use but very likely not
 				}
 			} else
 			{
 				//Primary path
-				if (activeRow < pathFromStart[activeColumn].Count) //Check for next primary element
+				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next primary element
 				{
-					StartCoreAnimation(activeTransform, activeColumn, activeRow + 1);
+					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
+					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
 				} else
 				{
 					primaryElementMissing = true;
