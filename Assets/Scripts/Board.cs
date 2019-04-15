@@ -325,13 +325,12 @@ namespace PipeCircles
 			bool primaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
 			bool secondaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
 
-			/*^^^^ DEBUG purposes
-			print("Active Column: " + activeColumn.ToString());
-			print("Active Row: " + activeRow.ToString());
+			//^^^^ DEBUG purposes
+			//print("Active Column: " + activeColumn.ToString());
+			//print("Active Row: " + activeRow.ToString());
 			print("Length of main path: " + pathFromStart[0].Count);
-			print("Number of columns in pathFromStart: " + pathFromStart.Count);
-			print("Is Splitter: " + isSplitter.ToString());
-			*/
+			//print("Number of columns in pathFromStart: " + pathFromStart.Count);
+			//print("Is Splitter: " + isSplitter.ToString());
 
 			if (!isSplitter)
 			{
