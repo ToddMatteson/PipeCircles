@@ -14,7 +14,7 @@ namespace PipeCircles
 		private const string UNTAGGED_TAG = "Untagged";
 
 		[Header("Preplaced Pieces")]
-		[SerializeField] Transform[] preplacedPieces;
+		[SerializeField] [Tooltip ("Actual object, not prefab")] Transform[] preplacedPieces;
 		[SerializeField] Vector2Int[] preplacedPositions;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
@@ -328,7 +328,7 @@ namespace PipeCircles
 			//^^^^ DEBUG purposes
 			//print("Active Column: " + activeColumn.ToString());
 			//print("Active Row: " + activeRow.ToString());
-			print("Length of main path: " + pathFromStart[0].Count);
+			//print("Length of main path: " + pathFromStart[0].Count);
 			//print("Number of columns in pathFromStart: " + pathFromStart.Count);
 			//print("Is Splitter: " + isSplitter.ToString());
 

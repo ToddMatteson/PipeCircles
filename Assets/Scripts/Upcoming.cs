@@ -12,8 +12,8 @@ namespace PipeCircles
 		[SerializeField] float pos1StartX = 0;
 		[SerializeField] float pos1StartY = 0;
 		[SerializeField] float pieceSpacingY = 100f;
-		[SerializeField] float moveSpeed = 100f;
 		[SerializeField] float waterDropYOffset = 20f;
+		[SerializeField] float pieceMovementTime = 1f;
 
 		[Header ("Prefabs and Weights")]
 		[SerializeField] Transform[] piecePrefab;
@@ -26,15 +26,28 @@ namespace PipeCircles
 		[SerializeField] Transform gameBoard;
 		[Range (0, 2000f)]
 		[SerializeField] float distDropDestroy;
+		
 
 		Transform[] upcomingPieces = new Transform[numPieces];
 		Transform[] waterDrops = new Transform[numPieces];
 
 		bool moveUpcomingPieces = false;
+		float currentPieceMovementTime;
+		Vector3 startingPieceMovePos;
+		Vector3 endingPieceMovePos;
+		Vector3 startingWaterDropMovePos;
+		Vector3 endingWaterDropMovePos;
+		
+		bool removeWaterDrop = false;
+		float currentDropDisposalTime;
+		Vector3 startingDropDisposalPos;
+		Vector3 endingDropDisposalPos;
+		Transform waterDropToRemove;
+
 		float totalWeight;
 
-		bool removeWaterDrop = false;
-		Transform waterDropToRemove;
+		
+		
 		Vector3 waterDropToRemoveInitialPos;
 
 		private void Start()
@@ -46,8 +59,7 @@ namespace PipeCircles
 		{
 			if (moveUpcomingPieces)
 			{
-				MoveUpcomingPieceTransforms();
-				MoveWaterDropTransforms();
+				MovePiecesAndWaterDrops();
 			}
 
 			if (removeWaterDrop)
@@ -71,11 +83,10 @@ namespace PipeCircles
 			ReindexPieceAndWaterDropArrays();
 			GenerateNewPieceAndWaterDrop();
 			ReverseChildren();
-			MoveUpcomingPieceTransforms();
-			MoveWaterDropTransforms();
+			MovePiecesAndWaterDrops();
 		}
 
-		public void clearArrays()
+		public void ClearArrays()
 		{
 			for (int i = 0; i < numPieces; i++)
 			{
@@ -217,40 +228,39 @@ namespace PipeCircles
 			}
 		}
 
-		private void MoveUpcomingPieceTransforms() //Without a full array, nothing moves
+		private void MovePiecesAndWaterDrops()
 		{
-			if (upcomingPieces[numPieces - 1] == null || upcomingPieces[numPieces - 2] == null) { return; }
-			Vector3 lastPieces = upcomingPieces[numPieces - 1].position - upcomingPieces[numPieces - 2].position;
-			if (lastPieces.magnitude < pieceSpacingY)
+			if (moveUpcomingPieces)
 			{
-				moveUpcomingPieces = true;
+				currentPieceMovementTime += Time.deltaTime;
 
-				for (int i = 0; i < numPieces - 1; i++) //Last piece was already placed in correct spot when created
+				if(currentPieceMovementTime > pieceMovementTime)
 				{
-					float xPos = upcomingPieces[i].transform.position.x;
-					float yPos = upcomingPieces[i].transform.position.y;
-					float yNewPos = yPos + moveSpeed * Time.deltaTime;
-					upcomingPieces[i].transform.position = new Vector2(xPos, yNewPos);
+					currentPieceMovementTime = pieceMovementTime;
+					moveUpcomingPieces = false;
+				}
+
+				float t = currentPieceMovementTime / pieceMovementTime;
+				t = t * t * t * (t * (6f * t - 15f) + 10f);
+				upcomingPieces[0].position = Vector3.Lerp(startingPieceMovePos, endingPieceMovePos, t);
+				waterDrops[0].position = Vector3.Lerp(startingWaterDropMovePos, endingWaterDropMovePos, t);
+
+				for (int i = 1; i < numPieces - 1; i++) //Last piece was created in correct spot, no need to move it
+				{
+					upcomingPieces[i].position = upcomingPieces[0].position + pieceSpacingY * i * Vector3.up;
+					waterDrops[i].position = waterDrops[0].position + pieceSpacingY * i * Vector3.up;
 				}
 			} else
 			{
-				moveUpcomingPieces = false;
-			}
-		}
+				if (upcomingPieces[numPieces - 1] == null || upcomingPieces[numPieces - 2] == null) { return; }
 
-		private void MoveWaterDropTransforms() //To avoid confusion, moving water drops was moved from a different method than the pieces
-		{
-			if (waterDrops[numPieces - 1] == null || waterDrops[numPieces - 2] == null) { return; }
-			Vector3 lastWaterDrop = waterDrops[numPieces - 1].position - waterDrops[numPieces - 2].position;
-			if (lastWaterDrop.magnitude < pieceSpacingY)
-			{
-				for (int i = 0; i < numPieces - 1; i++) //Last piece was already placed in correct spot when created
-				{
-					float xPos = waterDrops[i].transform.position.x;
-					float yPos = waterDrops[i].transform.position.y;
-					float yNewPos = yPos + moveSpeed * Time.deltaTime;
-					waterDrops[i].transform.position = new Vector2(xPos, yNewPos);
-				}
+				startingPieceMovePos = upcomingPieces[0].position;
+				startingWaterDropMovePos = waterDrops[0].position;
+				endingPieceMovePos = startingPieceMovePos + pieceSpacingY * Vector3.down;
+				endingWaterDropMovePos = startingWaterDropMovePos + pieceSpacingY * Vector3.down;
+
+				currentPieceMovementTime = 0;
+				moveUpcomingPieces = true;
 			}
 		}
 
@@ -266,26 +276,27 @@ namespace PipeCircles
 		{
 			if (removeWaterDrop)
 			{
-				Vector3 posDifference = waterDropToRemove.position - waterDropToRemoveInitialPos;
-				if (posDifference.magnitude > distDropDestroy)
+				currentDropDisposalTime += Time.deltaTime;
+
+				if (currentDropDisposalTime > pieceMovementTime)
 				{
 					removeWaterDrop = false;
 					Destroy(waterDropToRemove.gameObject);
-				} else
-				{
-					float xPos = waterDropToRemove.transform.position.x;
-					float yPos = waterDropToRemove.transform.position.y;
-					float zPos = waterDropToRemove.transform.position.z;
-					float yNewPos = yPos + moveSpeed * Time.deltaTime;
-					waterDropToRemove.transform.position = new Vector3(xPos, yNewPos, zPos);
 				}
+
+				float t = currentDropDisposalTime / pieceMovementTime;
+				t = t * t * t * (t * (6f * t - 15f) + 10f);
+				if (waterDropToRemove != null) //in case it has been destroyed already
+				{
+					waterDropToRemove.position = Vector3.Lerp(startingDropDisposalPos, endingDropDisposalPos, t);
+				}
+				
 			} else
 			{
 				waterDropToRemove = waterDrops[0];
-				float xPos = waterDropToRemove.transform.position.x;
-				float yPos = waterDropToRemove.transform.position.y;
-				float zPos = waterDropToRemove.transform.position.y;
-				waterDropToRemoveInitialPos = new Vector3(xPos, yPos, zPos);
+				startingDropDisposalPos = waterDropToRemove.position;
+				endingDropDisposalPos = startingDropDisposalPos + pieceSpacingY * Vector3.down;
+				currentDropDisposalTime = 0;
 				removeWaterDrop = true;
 			}
 		}

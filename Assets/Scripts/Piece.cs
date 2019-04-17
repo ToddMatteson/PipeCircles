@@ -106,6 +106,11 @@ namespace PipeCircles
 		{
 			scoring.LoopCompleted();
 		}
+
+		public void EndReached() //Called by animations
+		{
+			scoring.EndReached();
+		}
 		
 		public void AnimationComplete(string startingDirection) //Called by animations
 		{
