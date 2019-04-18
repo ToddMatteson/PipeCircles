@@ -16,17 +16,15 @@ namespace PipeCircles
 		[SerializeField] float pieceMovementTime = 1f;
 
 		[Header ("Prefabs and Weights")]
-		[SerializeField] Transform[] piecePrefab;
-		[SerializeField] [Range (0, 10000f)] float[] pieceWeighting;
-		[SerializeField] Transform[] waterDropPrefabs;
+		[SerializeField] Transform[] piecePrefab = null;
+		[SerializeField] [Range (0, 10000f)] float[] pieceWeighting = null;
+		[SerializeField] Transform[] waterDropPrefabs = null;
 
 		[Header ("Other")]
-		[SerializeField] Transform placedPiecesContainer;
-		[SerializeField] Transform waterDropsContainer;
-		[SerializeField] Transform gameBoard;
-		[Range (0, 2000f)]
-		[SerializeField] float distDropDestroy;
-		
+		[SerializeField] Transform placedPiecesContainer = null;
+		[SerializeField] Transform waterDropsContainer = null;
+		[SerializeField] Transform gameBoard = null;
+		[Range (0, 2000f)] [SerializeField] float distDropDestroy;
 
 		Transform[] upcomingPieces = new Transform[numPieces];
 		Transform[] waterDrops = new Transform[numPieces];

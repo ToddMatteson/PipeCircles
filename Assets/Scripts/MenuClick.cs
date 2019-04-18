@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MenuClick : MonoBehaviour
 {
-	[SerializeField] GameObject mainMenuPanel;
+	[SerializeField] GameObject mainMenuPanel = null;
 
 	public void OnMouseUp()
 	{

@@ -7,8 +7,8 @@ namespace PipeCircles
 {
 	public class Scoring : MonoBehaviour
 	{
-		[SerializeField] TextMeshProUGUI scoreText;
-		[SerializeField] TextMeshProUGUI loopsText;
+		[SerializeField] TextMeshProUGUI scoreText = null;
+		[SerializeField] TextMeshProUGUI loopsText = null;
 
 		[SerializeField] int loopScore = 100;
 		[SerializeField] int loopTierBonus = 200;

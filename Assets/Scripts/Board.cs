@@ -14,14 +14,19 @@ namespace PipeCircles
 		private const string UNTAGGED_TAG = "Untagged";
 
 		[Header("Preplaced Pieces")]
-		[SerializeField] [Tooltip ("Actual object, not prefab")] Transform[] preplacedPieces;
-		[SerializeField] Vector2Int[] preplacedPositions;
+		[SerializeField] [Tooltip ("Actual object, not prefab")] Transform[] preplacedPieces = null;
+		[SerializeField] Vector2Int[] preplacedPositions = null;
+
+		[Header("Teleporters")]
+		[SerializeField] [Tooltip("Board Location, also add to Preplaced Pieces")] Vector2Int[] teleportPos = null;
+		[SerializeField] [Tooltip("Board Location to emerge from")] Vector2Int[] matchingTeleportPos = null;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
 		Dictionary<PathTransformDirection, bool> animStartedDict = new Dictionary<PathTransformDirection, bool>();
 		Dictionary<PathTransformDirection, bool> animDoneDict = new Dictionary<PathTransformDirection, bool>();
+		Dictionary<Vector2Int, Vector2Int> teleportDict = new Dictionary<Vector2Int, Vector2Int>();
 
 		bool waterFlowStarted = false;
 		int numSplits = 0;
@@ -51,9 +56,10 @@ namespace PipeCircles
 			ClearBoard();
 			ClearAnimDicts();
 			AddPreplacedPiecesToBoard();
+			AddTeleporters();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
 		}
-
+		
 		private void Update()
 		{
 			pathFromStart = FindPathFromStart();
@@ -102,6 +108,32 @@ namespace PipeCircles
 			{
 				if (preplacedPieces[i] == null || preplacedPositions[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
 				AddPieceToBoardInBoardUnits(preplacedPieces[i], preplacedPositions[i]);
+			}
+		}
+
+		private void AddTeleporters()
+		{
+			teleportDict.Clear();
+
+			if (teleportPos.Length != matchingTeleportPos.Length)
+			{
+				Debug.LogError("teleportPos is not the same length as matchingTeleportPos");
+				return;
+			}
+
+			if (teleportPos.Length == 1)
+			{
+				Debug.LogError("Please add the other teleport as well");
+				return;
+			}
+
+			if (teleportPos.Length != 0)
+			{
+				for (int i = 0; i < teleportPos.Length; i++)
+				{
+					if (teleportPos[i] == null || matchingTeleportPos[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
+					teleportDict.Add(teleportPos[i], matchingTeleportPos[i]);
+				}
 			}
 		}
 
@@ -210,18 +242,27 @@ namespace PipeCircles
 
 		private Vector2Int GetNewBoardPos(List<List<PathTransformDirection>> path, Direction firstExitDirection, int currentColumn, int oldColumn)
 		{
-			int newBoardPosX;
-			int newBoardPosY;
-			if (path[currentColumn].Count > 0)
+			int currentBoardPosX;
+			int currentBoardPosY;
+
+			if (path[currentColumn].Count > 0) //Not directly after a splitter
 			{
-				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).x;
-				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).y;
-			} else
+				currentBoardPosX = CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).x;
+				currentBoardPosY = CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).y;
+			} else //Directly after a splitter
 			{
-				newBoardPosX = dirToVector2[firstExitDirection].x + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).x;
-				newBoardPosY = dirToVector2[firstExitDirection].y + CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).y;
+				currentBoardPosX = CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).x;
+				currentBoardPosY = CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).y;
 			}
-			return new Vector2Int(newBoardPosX, newBoardPosY);
+
+			//Teleporter special case
+			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
+			if (teleportDict.ContainsKey(currentBoardPos))
+			{
+				return new Vector2Int (teleportDict[currentBoardPos].x, teleportDict[currentBoardPos].y);
+			}
+
+			return new Vector2Int(currentBoardPosX + dirToVector2[firstExitDirection].x, currentBoardPosY + dirToVector2[firstExitDirection].y);
 		}
 
 		private Direction ReverseDirection(Direction directionToReverse)
@@ -274,8 +315,7 @@ namespace PipeCircles
 			{
 				waterFlowStarted = true;
 				if (pathFromStart.Count == 0 || pathFromStart[0].Count == 0) { LevelOver(); } //No starting piece, so just kill the round
-				Transform activePieceTransform = pathFromStart[0][0].pathTransform;
-				StartCoreAnimation(activePieceTransform, 0, 0);
+				StartCoreAnimation(pathFromStart[0][0].pathTransform, 0, 0);
 			}
 		}
 

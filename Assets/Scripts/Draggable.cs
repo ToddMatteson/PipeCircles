@@ -19,7 +19,7 @@ namespace PipeCircles
 		private int originalSortingOrder;
 		private Vector2 mouseOffset;
 
-		[SerializeField] Transform upcomingTransform;
+		[SerializeField] Transform upcomingTransform = null;
 
 		void Update()
 		{

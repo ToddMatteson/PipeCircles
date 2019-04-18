@@ -7,7 +7,6 @@ namespace PipeCircles
 {
 	public class Piece : MonoBehaviour
 	{
-		Vector2 worldPos;
 		Vector2Int boardPos;
 
 		[Header("Water Entering")]
@@ -27,14 +26,6 @@ namespace PipeCircles
 		[SerializeField] Direction secondRightLeads = Direction.Nowhere;
 		[SerializeField] Direction secondBottomLeads = Direction.Nowhere;
 		[SerializeField] Direction secondLeftLeads = Direction.Nowhere;
-
-		[Header("Cross Sprites")]
-		[SerializeField] Sprite leftOverVertical;
-		[SerializeField] Sprite leftOverHorizontal;
-		[SerializeField] Sprite leftOverFull;
-		[SerializeField] Sprite topOverVertical;
-		[SerializeField] Sprite topOverHorizontal;
-		[SerializeField] Sprite topOverFull;
 
 		Board board;
 		Scoring scoring;
