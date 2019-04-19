@@ -1,0 +1,856 @@
+fileFormatVersion: 2
+guid: 94ee8c11bde96b8438a74cc278a6c32b
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: TeleportBottomRight2ndSpritesheetOut_0
+    21300002: TeleportBottomRight2ndSpritesheetOut_1
+    21300004: TeleportBottomRight2ndSpritesheetOut_2
+    21300006: TeleportBottomRight2ndSpritesheetOut_3
+    21300008: TeleportBottomRight2ndSpritesheetOut_4
+    21300010: TeleportBottomRight2ndSpritesheetOut_5
+    21300012: TeleportBottomRight2ndSpritesheetOut_6
+    21300014: TeleportBottomRight2ndSpritesheetOut_7
+    21300016: TeleportBottomRight2ndSpritesheetOut_8
+    21300018: TeleportBottomRight2ndSpritesheetOut_9
+    21300020: TeleportBottomRight2ndSpritesheetOut_10
+    21300022: TeleportBottomRight2ndSpritesheetOut_11
+    21300024: TeleportBottomRight2ndSpritesheetOut_12
+    21300026: TeleportBottomRight2ndSpritesheetOut_13
+    21300028: TeleportBottomRight2ndSpritesheetOut_14
+    21300030: TeleportBottomRight2ndSpritesheetOut_15
+    21300032: TeleportBottomRight2ndSpritesheetOut_16
+    21300034: TeleportBottomRight2ndSpritesheetOut_17
+    21300036: TeleportBottomRight2ndSpritesheetOut_18
+    21300038: TeleportBottomRight2ndSpritesheetOut_19
+    21300040: TeleportBottomRight2ndSpritesheetOut_20
+    21300042: TeleportBottomRight2ndSpritesheetOut_21
+    21300044: TeleportBottomRight2ndSpritesheetOut_22
+    21300046: TeleportBottomRight2ndSpritesheetOut_23
+    21300048: TeleportBottomRight2ndSpritesheetOut_24
+    21300050: TeleportBottomRight2ndSpritesheetOut_25
+    21300052: TeleportBottomRight2ndSpritesheetOut_26
+    21300054: TeleportBottomRight2ndSpritesheetOut_27
+    21300056: TeleportBottomRight2ndSpritesheetOut_28
+    21300058: TeleportBottomRight2ndSpritesheetOut_29
+    21300060: TeleportBottomRight2ndSpritesheetOut_30
+    21300062: TeleportBottomRight2ndSpritesheetOut_31
+    21300064: TeleportBottomRight2ndSpritesheetOut_32
+    21300066: TeleportBottomRight2ndSpritesheetOut_33
+    21300068: TeleportBottomRight2ndSpritesheetOut_34
+  externalObjects: {}
+  serializedVersion: 7
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: -1
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 1
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  platformSettings:
+  - serializedVersion: 2
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  - serializedVersion: 2
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11cd6b1b4b933e447a8b40fc7fc85ceb
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_1
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8507c48454acd442a3b2f166ac77b77
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_2
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fee3b5ca867da0341ba24791fb0530bb
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_3
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6bed50b65ba10c34c97c43f394205f38
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_4
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 42033afd3c454a94e95cf1f5edf2fc85
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_5
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3fc5cfe95b55c34a91019620867eb1a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_6
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0ea47f9fe85cb85409b5f84fdaea88f2
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_7
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 924
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e74d48d40753a7341aa3c091e2e22722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 691bd8deba0eb634e927130303a02ac9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_9
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d50660a73767824d960d5a4cb1bd29b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_10
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a41f3b7b792bc14f920ebec14ae9ae3
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_11
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2926a1c374f4b44ca6803dab7a98a47
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_12
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb23d41cda89d3e4cb5ddbba239519c4
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_13
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae740041a9a280e4a9aa1d941f2d1e6e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_14
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da27faabcd4a6e34bb87dca0e8cd5306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_15
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 796
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d69d74eb661b88e488b0dea83451e37f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97a55c92cffd5c9479703eb438dadff2
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_17
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e166276e4a1cbb7459fd529e6376999f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_18
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b1ba17815169ba4faccd63e922aade9
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_19
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ffbb554152a1f944ab6f29f3d2783136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_20
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e03102ac5a55ef444927d0680c983bf4
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_21
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4edb4733b800a724785e6e3f8a60dbde
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_22
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 89988f84330aa2e45b44073bd5bdd342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_23
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 668
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c247ccfe65955bb47aea1f14c068d697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_24
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57d783fe4c1e5a04990762b97c533efb
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_25
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d01e931f00b9b14caa013a1bcb9e91c
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_26
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50686ef4b57f24343ba52f07c08adb9a
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_27
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 033ff8b90ac5d4447b2d3eadaceb82af
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_28
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19dc64101bc31f94586715c515b0fbda
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_29
+      rect:
+        serializedVersion: 2
+        x: 640
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6549cddc69d46384dbbec039f41a942e
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_30
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8fb715d8796c4a4a80cabf92e6d5d38
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_31
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 540
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea00f9898867a8b4dbbc497205377a4f
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_32
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 412
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f37d997692f38ac45abfa1248a9f558b
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_33
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 412
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: baea68c93c4ee1d4f9379dd3adf389bd
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TeleportBottomRight2ndSpritesheetOut_34
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 412
+        width: 100
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ebec9a8abe915de4f84430ce084b22df
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5896c6b84f65ab9458c335c2fe09f184
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

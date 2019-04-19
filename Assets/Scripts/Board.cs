@@ -259,7 +259,9 @@ namespace PipeCircles
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			if (teleportDict.ContainsKey(currentBoardPos))
 			{
-				return new Vector2Int (teleportDict[currentBoardPos].x, teleportDict[currentBoardPos].y);
+				int newBoardPosX = teleportDict[currentBoardPos].x + dirToVector2[firstExitDirection].x;
+				int newBoardPosY = teleportDict[currentBoardPos].y + dirToVector2[firstExitDirection].y;
+				return new Vector2Int (newBoardPosX, newBoardPosY);
 			}
 
 			return new Vector2Int(currentBoardPosX + dirToVector2[firstExitDirection].x, currentBoardPosY + dirToVector2[firstExitDirection].y);
