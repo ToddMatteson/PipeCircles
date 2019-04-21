@@ -26,7 +26,8 @@ namespace PipeCircles
 		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
 		Dictionary<PathTransformDirection, bool> animStartedDict = new Dictionary<PathTransformDirection, bool>();
 		Dictionary<PathTransformDirection, bool> animDoneDict = new Dictionary<PathTransformDirection, bool>();
-		Dictionary<Vector2Int, Vector2Int> teleportDict = new Dictionary<Vector2Int, Vector2Int>();
+		Dictionary<Vector2Int, Vector2Int> teleportDict = new Dictionary<Vector2Int, Vector2Int>(); //Board pos
+		Dictionary<Vector2Int, Vector2Int> splitterCameFromPathIndexes = new Dictionary<Vector2Int, Vector2Int>(); //working backwards to find starting path pos 
 
 		bool waterFlowStarted = false;
 		int numSplits = 0;
@@ -62,7 +63,6 @@ namespace PipeCircles
 		
 		private void Update()
 		{
-			pathFromStart = FindPathFromStart();
 			WaterStarts();
 		}
 
@@ -156,14 +156,14 @@ namespace PipeCircles
 			pathFromStart = FindPathFromStart();
 		}
 
-		private Vector2Int CalcBoardPos(Transform transformToCheck)
+		private static Vector2Int CalcBoardPos(Transform transformToCheck)
 		{
 			int boardX = Mathf.RoundToInt(transformToCheck.position.x / PIXELS_PER_BOARD_UNIT);
 			int boardY = Mathf.RoundToInt(transformToCheck.position.y / PIXELS_PER_BOARD_UNIT);
 			return new Vector2Int(boardX, boardY);
 		}
 
-		private bool CheckValidBoardPos(Vector2 boardPos)
+		private static bool CheckValidBoardPos(Vector2 boardPos)
 		{
 			if (boardPos.x < 0 || boardPos.x >= BOARD_UNITS_WIDE) { return false; }
 			if (boardPos.y < 0 || boardPos.y >= BOARD_UNITS_HIGH) { return false; }
@@ -172,13 +172,18 @@ namespace PipeCircles
 
 		private List<List<PathTransformDirection>> FindPathFromStart()
 		{
+			//Reset variables
 			numSplits = 0;
 			List<List<PathTransformDirection>> path = new List<List<PathTransformDirection>>();
+			splitterCameFromPathIndexes.Clear();
+
 			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return path; } //No starting piece => no path
+
 			path.Add(new List<PathTransformDirection>());
 			path[0].Add(new PathTransformDirection(board[preplacedPositions[0].x, preplacedPositions[0].y], Direction.Top));
 
 			FindColumnPath(path, Direction.Nowhere, 0);
+
 			UpdateAnimDictionaries();
 			return path;
 		}
@@ -206,6 +211,7 @@ namespace PipeCircles
 				Vector2Int newBoardPos = GetNewBoardPos(path, firstExitDirection, currentColumn, oldColumn);
 			
 				if (!CheckValidBoardPos(newBoardPos)) { return; } //Piece on edge of board => no more path
+				//print("Board spot null? " + (board[newBoardPos.x, newBoardPos.y] == null).ToString());
 				if (board[newBoardPos.x, newBoardPos.y] == null) { return; } //No piece placed yet => no more path
 
 				Direction entranceDirection = ReverseDirection(firstExitDirection);
@@ -213,6 +219,16 @@ namespace PipeCircles
 
 				//Now have a valid piece, can add it to the path list
 				path[currentColumn].Add(new PathTransformDirection(board[newBoardPos.x, newBoardPos.y], entranceDirection));
+
+				if(path[currentColumn].Count == 1) //Just added the piece after a splitter
+				{
+					Vector2Int currentPathIndexes = new Vector2Int(currentColumn, 0);
+					if (!splitterCameFromPathIndexes.ContainsKey(currentPathIndexes))
+					{
+						splitterCameFromPathIndexes.Add(currentPathIndexes, new Vector2Int(oldColumn, path[oldColumn].Count - 1));
+					}
+				}
+
 				firstExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().FirstExitDirection(entranceDirection);
 				secondExitDirection = board[newBoardPos.x, newBoardPos.y].GetComponent<Piece>().SecondExitDirection();
 			}
@@ -242,32 +258,50 @@ namespace PipeCircles
 
 		private Vector2Int GetNewBoardPos(List<List<PathTransformDirection>> path, Direction firstExitDirection, int currentColumn, int oldColumn)
 		{
-			int currentBoardPosX;
-			int currentBoardPosY;
-
+			int currentColumnPathIndex;
+			int currentRowPathIndex;
 			if (path[currentColumn].Count > 0) //Not directly after a splitter
 			{
-				currentBoardPosX = CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).x;
-				currentBoardPosY = CalcBoardPos(path[currentColumn][path[currentColumn].Count - 1].pathTransform).y;
+				currentColumnPathIndex = currentColumn;
+				currentRowPathIndex = path[currentColumn].Count - 1;
+				
 			} else //Directly after a splitter
 			{
-				currentBoardPosX = CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).x;
-				currentBoardPosY = CalcBoardPos(path[oldColumn][path[oldColumn].Count - 1].pathTransform).y;
+				currentColumnPathIndex = oldColumn;
+				currentRowPathIndex = path[oldColumn].Count - 1;
 			}
+
+			int currentBoardPosX;
+			int currentBoardPosY;
+			Transform currentTransform = path[currentColumnPathIndex][currentRowPathIndex].pathTransform;
+			currentBoardPosX = CalcBoardPos(currentTransform).x;
+			currentBoardPosY = CalcBoardPos(currentTransform).y;
 
 			//Teleporter special case
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			if (teleportDict.ContainsKey(currentBoardPos))
 			{
-				int newBoardPosX = teleportDict[currentBoardPos].x + dirToVector2[firstExitDirection].x;
-				int newBoardPosY = teleportDict[currentBoardPos].y + dirToVector2[firstExitDirection].y;
-				return new Vector2Int (newBoardPosX, newBoardPosY);
+				int newBoardPosX = teleportDict[currentBoardPos].x;
+				int newBoardPosY = teleportDict[currentBoardPos].y;
+
+				print("Current Pos: (" + currentBoardPosX + ", " + currentBoardPosY + ")");
+				print("New Pos: (" + newBoardPosX + ", " + newBoardPosY + ")");
+
+				int xDiff = newBoardPosX - currentBoardPosX;
+				int yDiff = newBoardPosY - currentBoardPosY;
+
+				if (!(xDiff * yDiff != 0 || Mathf.Abs(xDiff + yDiff) != 1)) //Either x or y has to be unchanged to be adjacent, so the product must be 0 //(1, 0) or (-1, 0) or (0, 1) or (0, -1)
+				{	//Only want the entrance into a teleporter to go to the corresponding teleport location
+					//An exit out of a teleporter needs to go to the next adjacent piece, not go back to the originating teleporter
+					//Execution can just fall out of the Teleporter special case
+					return new Vector2Int(newBoardPosX, newBoardPosY);
+				}
 			}
 
 			return new Vector2Int(currentBoardPosX + dirToVector2[firstExitDirection].x, currentBoardPosY + dirToVector2[firstExitDirection].y);
 		}
 
-		private Direction ReverseDirection(Direction directionToReverse)
+		private static Direction ReverseDirection(Direction directionToReverse)
 		{
 			switch (directionToReverse)
 			{
@@ -325,16 +359,71 @@ namespace PipeCircles
 		{
 			Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
 			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
-			SetAnimatorEvents(animator, startingDirection);
+			bool teleporterIn = IsTeleporterIn(activePieceTransform, colIndex, rowIndex);
+			SetAnimatorEvents(animator, startingDirection, teleporterIn);
 			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 			animStartedDict[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = true;
 		}
 
-		private void SetAnimatorEvents(Animator animator, Direction startingDirection)
+		private bool IsTeleporterIn(Transform activePieceTransform, int colIndex, int rowIndex)
+		{
+			/*/////
+			This algorithm will fail if two teleporters are placed adjacent to each other
+			Don't do this!
+			It would be silly anyway!
+			*//////
+
+			if (colIndex == 0 && rowIndex == 0) { return true; } //Starting piece doesn't have a previous piece
+			
+			Vector2Int previousPiecePathIndexes;
+			if (rowIndex > 0)
+			{
+				previousPiecePathIndexes = new Vector2Int(colIndex, rowIndex - 1);
+			} else //Must be directly after a splitter
+			{
+				previousPiecePathIndexes = splitterCameFromPathIndexes[new Vector2Int(colIndex, rowIndex)];
+			}
+
+			Transform previousPieceTransform = pathFromStart[previousPiecePathIndexes.x][previousPiecePathIndexes.y].pathTransform;
+
+			Vector2Int currentPieceBoardPos = CalcBoardPos(activePieceTransform);
+			Vector2Int previousPieceBoardPos = CalcBoardPos(previousPieceTransform);
+			int xDiff = currentPieceBoardPos.x - previousPieceBoardPos.x;
+			int yDiff = currentPieceBoardPos.y - previousPieceBoardPos.y;
+
+			if (xDiff * yDiff != 0)
+			{
+				return false; //Either x or y has to be unchanged to be adjacent, so the product must be 0
+			}
+			if (Mathf.Abs(xDiff + yDiff) != 1) //(1, 0) or (-1, 0) or (0, 1) or (0, -1)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool teleporterIn)
 		{
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
 			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
+			if (teleporterIn)
+			{
+				animator.SetBool("In", true);
+			} else
+			{
+				animator.SetBool("In", false);
+			}
+
+			print("Length of main path: " + pathFromStart[0].Count.ToString());
+			print("X Location of last on main path: " + CalcBoardPos(pathFromStart[0][pathFromStart[0].Count - 1].pathTransform).x.ToString());
+			print("Y Location of last on main path: " + CalcBoardPos(pathFromStart[0][pathFromStart[0].Count - 1].pathTransform).y.ToString());
+			print("Starting Direction: " + startingDirection.ToString());
+			print("LeftOrRightStart: " + animator.GetBool("LeftOrRightStart").ToString());
+			print("LeftOrBottomStart: " + animator.GetBool("LeftOrBottomStart").ToString());
+			print("In: " + animator.GetBool("In").ToString());
+
 			animator.SetTrigger("Transition");
 		}
 
@@ -354,7 +443,7 @@ namespace PipeCircles
 
 		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
 		{
-			Vector2Int completedIndexes = FindCompletedIndexes(transformAnimComplete, startingDirection);
+			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
 			int activeColumn = completedIndexes.x;
 			int activeRow = completedIndexes.y;
 			PathTransformDirection completedAnim = new PathTransformDirection(pathFromStart[activeColumn][activeRow].pathTransform, startingDirection);
@@ -376,7 +465,7 @@ namespace PipeCircles
 
 			if (!isSplitter)
 			{
-				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element
+				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
 				{
 					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
 					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
@@ -425,7 +514,7 @@ namespace PipeCircles
 			}
 		}
 		
-		private Vector2Int FindCompletedIndexes(Transform transformAnimComplete, Direction startingDirection)
+		private Vector2Int FindCompletedPathIndexes(Transform transformAnimComplete, Direction startingDirection)
 		{
 			List<PathTransformDirection> activeAnimations = FindCurrentlyActiveAnimations();
 			PathTransformDirection completedAnim = new PathTransformDirection(transformAnimComplete, startingDirection);
