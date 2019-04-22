@@ -6,10 +6,7 @@ namespace PipeCircles
 {
 	public class Trajectory : MonoBehaviour
 	{
-		[SerializeField] [Tooltip ("Gravity")] float g = 10f;
-		[SerializeField] [Range (0, 1000f)] float launchSpeed = 10f;
-
-		public ThetaReturn FindLaunchAngleToTarget(Vector2 startPos, Vector2 endPos)
+		public ThetaReturn FindLaunchAngleToTarget(Vector2 startPos, Vector2 endPos, float launchSpeed, float g)
 		{
 			float v = launchSpeed;
 
@@ -38,7 +35,26 @@ namespace PipeCircles
 			return answer;
 		}
 
-		public Vector2 FindPosition(Vector2 startPos, float launchAngle, float timeSinceLaunch)
+		public float FindTotalFlightTime(Vector2 startPos, Vector2 endPos, float launchAngle, float launchSpeed, float g)
+		{
+			//Using the formula found on the wikipedia page on projectile motion
+			//t = (1 / g) * [vSinTheta + sqrt( [vSinTheta]^2 + 2gy0)]
+			//where y0 is the amount the starting point is above the ending point
+
+			float y0 = startPos.y - endPos.y;
+			float vSinTheta = launchSpeed * Mathf.Sin(launchAngle);
+			float sqrtPortion = vSinTheta * vSinTheta + 2f * g * y0;
+			if(sqrtPortion < 0)
+			{
+				return 0;
+			} else
+			{
+				sqrtPortion = Mathf.Sqrt(sqrtPortion);
+			}
+			return ((vSinTheta + sqrtPortion) / g);
+		}
+
+		public Vector2 FindPosition(Vector2 startPos, float launchAngle, float launchSpeed, float timeSinceLaunch, float g)
 		{
 			float xDisplacement = timeSinceLaunch * launchSpeed * Mathf.Cos(launchAngle);
 			float yDisplacement = timeSinceLaunch * launchSpeed * Mathf.Sin(launchAngle) - 0.5f * g * timeSinceLaunch * timeSinceLaunch;

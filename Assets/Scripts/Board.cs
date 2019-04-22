@@ -21,6 +21,13 @@ namespace PipeCircles
 		[SerializeField] [Tooltip("Board Location, also add to Preplaced Pieces")] Vector2Int[] teleportPos = null;
 		[SerializeField] [Tooltip("Board Location to emerge from")] Vector2Int[] matchingTeleportPos = null;
 
+		[Header("Teleporter Fountains")]
+		[SerializeField] [Tooltip ("Set interval to 0 to turn off")][Range (0f, 60f)] float launchInterval = 0;
+		[SerializeField] [Range (0.1f, 10000f)] float[] launchSpeed = null;
+		[SerializeField] float gravity = 10f;
+		[SerializeField] Transform projectilePrefab = null;
+		[SerializeField] Transform splashPrefab = null;
+
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
@@ -31,6 +38,18 @@ namespace PipeCircles
 		bool waterFlowStarted = false;
 		int numSplits = 0;
 		Timer timer;
+
+		//Teleporter projectile stuff
+		Trajectory trajectory;
+		float timeSinceLastProjectiles = 0;
+		List<ThetaReturn> launchAngles = new List<ThetaReturn>();
+		List<Vector2Int> startingPos = new List<Vector2Int>();
+		List<Vector2Int> endingPos = new List<Vector2Int>();
+		List<float> bestLaunchAngles = new List<float>();
+		List<Transform> projectiles = new List<Transform>();
+		List<float> flightTimes = new List<float>();
+		List<bool> projectileCompleted = new List<bool>();
+		bool allProjectilesCompleted = true;
 
 		private void Awake()
 		{
@@ -58,13 +77,22 @@ namespace PipeCircles
 			AddPreplacedPiecesToBoard();
 			AddTeleporters();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
+			trajectory = FindObjectOfType<Trajectory>().GetComponent<Trajectory>();
 		}
 		
 		private void Update()
 		{
 			WaterStarts();
-		}
 
+			if (allProjectilesCompleted)
+			{
+				LaunchTeleportProjectiles();
+			} else
+			{
+				MoveProjectiles();
+			}
+		}
+		
 		private void AddToVectorDictionary()
 		{
 			dirToVector2.Add(Direction.Top, new Vector2Int(0, 1));
@@ -113,9 +141,26 @@ namespace PipeCircles
 		{
 			teleportDict.Clear();
 
+			#region ClearProjectileListsRegion
+			startingPos.Clear();
+			endingPos.Clear();
+			launchAngles.Clear();
+			bestLaunchAngles.Clear();
+			projectiles.Clear();
+			flightTimes.Clear();
+			projectileCompleted.Clear();
+			#endregion ClearProjectileListsRegion
+
+			#region ErrorCheckingRegion
 			if (teleportPos.Length != matchingTeleportPos.Length)
 			{
 				Debug.LogError("teleportPos is not the same length as matchingTeleportPos");
+				return;
+			}
+
+			if (teleportPos.Length != launchSpeed.Length)
+			{
+				Debug.LogError("teleportPos is not the same length as launchSpeed");
 				return;
 			}
 
@@ -124,6 +169,7 @@ namespace PipeCircles
 				Debug.LogError("Please add the other teleporter as well");
 				return;
 			}
+			#endregion ErrorCheckingRegion
 
 			if (teleportPos.Length != 0)
 			{
@@ -131,6 +177,24 @@ namespace PipeCircles
 				{
 					if (teleportPos[i] == null || matchingTeleportPos[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
 					teleportDict.Add(teleportPos[i], matchingTeleportPos[i]);
+					if (launchInterval > 0.001f)
+					{
+						startingPos.Add(teleportPos[i]);
+						endingPos.Add(matchingTeleportPos[i]);
+
+						ThetaReturn launchAngle = trajectory.FindLaunchAngleToTarget(teleportPos[i], matchingTeleportPos[i], launchSpeed[i], gravity);
+						launchAngles.Add(launchAngle);
+						float theta1 = launchAngle.theta1;
+						float theta2 = launchAngle.theta2;
+
+						//TODO How do I determine which angle is better?
+						//Maybe the closest to 45 degrees (pi / 4)?
+						//Maybe the one with the shortest flight time?
+						//Just going with the smallest for now
+						float bestAngle = Mathf.Min(theta1, theta2);
+						bestLaunchAngles.Add(bestAngle);
+						flightTimes.Add(trajectory.FindTotalFlightTime(teleportPos[i], matchingTeleportPos[i], bestAngle, launchSpeed[i], gravity));
+					}
 				}
 			}
 		}
@@ -450,6 +514,64 @@ namespace PipeCircles
 			return activeAnimations;
 		}
 
+		private void LaunchTeleportProjectiles()
+		{
+			if (teleportDict.Count < 2) { return; } //No teleporters => no fancy animation
+			if (launchInterval < 0.001) { return; } //Easy way to disable
+
+			timeSinceLastProjectiles += Time.deltaTime;
+
+			if (timeSinceLastProjectiles < launchInterval) { return; }
+			timeSinceLastProjectiles = 0;
+
+			for (int i = 0; i < launchAngles.Count; i++)
+			{
+				if (launchAngles[i].success) 
+				{
+					Vector3 startPosition = new Vector3((float) startingPos[i].x * PIXELS_PER_BOARD_UNIT, (float) startingPos[i].y * PIXELS_PER_BOARD_UNIT, 0);
+					projectiles.Add(Instantiate(projectilePrefab, startPosition, Quaternion.identity));
+					projectileCompleted[i] = false;
+				} else
+				{ //No non-imaginary angle found for given launch speed, so just add a null value to make indexing the same
+					projectiles.Add(null);
+				}
+			}
+		}
+
+		private void MoveProjectiles()
+		{
+			if (launchInterval > 0.001f) { return; }
+
+			timeSinceLastProjectiles += Time.deltaTime;
+
+			for (int i = 0; i < launchAngles.Count; i++)
+			{
+				if (!launchAngles[i].success)
+				{
+					projectileCompleted[i] = true;
+					continue;
+				}
+				projectiles[i].position = trajectory.FindPosition(startingPos[i], bestLaunchAngles[i], launchSpeed[i], timeSinceLastProjectiles, gravity);
+				if (timeSinceLastProjectiles > flightTimes[i])
+				{   //Should be at the target now
+					Vector3 endPosition = new Vector3((float) endingPos[i].x * PIXELS_PER_BOARD_UNIT, (float) endingPos[i].y * PIXELS_PER_BOARD_UNIT, 0);
+					Instantiate(splashPrefab, endPosition, Quaternion.identity);
+					Destroy(projectiles[i].gameObject);
+					projectiles[i] = null;
+					projectileCompleted[i] = true;
+				}
+			}
+
+			allProjectilesCompleted = true;
+			for (int i = 0; i < launchAngles.Count; i++)
+			{
+				if (!(allProjectilesCompleted && projectileCompleted[i]))
+				{
+					allProjectilesCompleted = false;
+				}
+			}
+		}
+
 		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
 		{
 			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
@@ -464,13 +586,6 @@ namespace PipeCircles
 
 			bool primaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
 			bool secondaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
-
-			//^^^^ DEBUG purposes
-			//print("Active Column: " + activeColumn.ToString());
-			//print("Active Row: " + activeRow.ToString());
-			//print("Length of main path: " + pathFromStart[0].Count);
-			//print("Number of columns in pathFromStart: " + pathFromStart.Count);
-			//print("Is Splitter: " + isSplitter.ToString());
 
 			if (!isSplitter)
 			{
@@ -525,7 +640,7 @@ namespace PipeCircles
 		
 		private Vector2Int FindCompletedPathIndexes(Transform transformAnimComplete, Direction startingDirection)
 		{
-			List<PathTransformDirection> activeAnimations = FindCurrentlyActiveAnimations();
+			//List<PathTransformDirection> activeAnimations = FindCurrentlyActiveAnimations();
 			PathTransformDirection completedAnim = new PathTransformDirection(transformAnimComplete, startingDirection);
 
 			//if (!activeAnimations.Contains(completedAnim))
