@@ -9786,8 +9786,6 @@ MonoBehaviour:
   - {fileID: 509338911}
   - {fileID: 1558875109}
   - {fileID: 204821227}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 416499074}
   - {fileID: 2070374855}
   - {fileID: 1794296256}
@@ -9795,10 +9793,8 @@ MonoBehaviour:
   - {x: 5, y: 6}
   - {x: 5, y: 5}
   - {x: 7, y: 5}
-  - {x: 0, y: 0}
-  - {x: 0, y: 0}
   - {x: 4, y: 6}
-  - {x: 7, y: 6}
+  - {x: 7, y: 7}
   - {x: 6, y: 3}
   teleportPos:
   - {x: 7, y: 7}

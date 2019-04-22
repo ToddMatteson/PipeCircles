@@ -122,8 +122,10 @@ namespace PipeCircles
 				case "Left":
 					return Direction.Left;
 				case "Nowhere":
+					Debug.LogError("GetStartingDirection received a Nowhere argument.");
 					return Direction.Nowhere;
 				default:
+					Debug.LogError("GetStartingDirection had to use the default.");
 					return Direction.Nowhere;
 			}
 		}
