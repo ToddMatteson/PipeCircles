@@ -8,6 +8,7 @@ namespace PipeCircles
 {
 	public class Board : MonoBehaviour
 	{
+		#region VariableDeclaration
 		public const int BOARD_UNITS_WIDE = 12;
 		public const int BOARD_UNITS_HIGH = 9;
 		public const int PIXELS_PER_BOARD_UNIT = 100;
@@ -47,7 +48,9 @@ namespace PipeCircles
 		List<Transform> projectiles = new List<Transform>();
 		List<bool> projectileCompleted = new List<bool>();
 		bool allProjectilesCompleted;
+		#endregion VariableDeclaration
 
+		#region Awake
 		private void Awake()
 		{
 			SingletonPattern();
@@ -65,6 +68,7 @@ namespace PipeCircles
 				DontDestroyOnLoad(gameObject);
 			}
 		}
+		#endregion Awake
 
 		private void Start()
 		{
@@ -90,7 +94,8 @@ namespace PipeCircles
 				MoveProjectiles();
 			}
 		}
-		
+
+		#region BoardSetUp
 		private void AddToVectorDictionary()
 		{
 			dirToVector2.Add(Direction.Top, new Vector2Int(0, 1));
@@ -118,6 +123,7 @@ namespace PipeCircles
 
 		private void AddPreplacedPiecesToBoard()
 		{
+			#region ErrorChecking
 			if (preplacedPieces.Length != preplacedPositions.Length)
 			{
 				Debug.LogError("preplacedPieces is not the same length as preplacedPositions");
@@ -127,6 +133,7 @@ namespace PipeCircles
 			{
 				Debug.LogError("Please add a starting piece to the GameBoard");
 			}
+			#endregion ErrorChecking
 
 			for(int i = 0; i < preplacedPieces.Length; i++)
 			{
@@ -134,7 +141,9 @@ namespace PipeCircles
 				AddPieceToBoardInBoardUnits(preplacedPieces[i], preplacedPositions[i]);
 			}
 		}
+		#endregion BoardSetup
 
+		#region TeleporterSetUp
 		private void AddTeleporters()
 		{
 			teleportDict.Clear();
@@ -186,7 +195,9 @@ namespace PipeCircles
 				}
 			}
 		}
+		#endregion TeleporterSetUp
 
+		#region AddPieceToBoard
 		public void AddPieceToBoardInWorldUnits(Transform transformToAdd) 
 		{
 			Vector2Int boardPos = CalcBoardPos(transformToAdd);
@@ -219,7 +230,9 @@ namespace PipeCircles
 			if (boardPos.y < 0 || boardPos.y >= BOARD_UNITS_HIGH) { return false; }
 			return true;
 		}
+		#endregion AddPieceToBoard
 
+		#region Pathing
 		private List<List<PathTransformDirection>> FindPathFromStart()
 		{
 			numSplits = 0;
@@ -412,7 +425,9 @@ namespace PipeCircles
 				}
 			}
 		}
+		#endregion Pathing
 
+		#region Traversal
 		private void WaterStarts()
 		{	//Imagine a cross getting traversed from orthogonal directions at almost the same time.
 			//Does this mean that I might have to do additional GIMP animations for this?
@@ -485,21 +500,9 @@ namespace PipeCircles
 			}
 			animator.SetTrigger("Transition");
 		}
+		#endregion Traversal
 
-		private List<PathTransformDirection> FindCurrentlyActiveAnimations()
-		{
-			List<PathTransformDirection> activeAnimations = new List<PathTransformDirection>();
-			foreach (KeyValuePair<PathTransformDirection, AnimStatus> i in animState)
-			{
-				if (i.Value == AnimStatus.Started)
-				{
-					activeAnimations.Add(i.Key);
-				}
-			}
-
-			return activeAnimations;
-		}
-
+		#region Projectiles
 		private void LaunchTeleportProjectiles()
 		{
 			if (teleportDict.Count < 2) { return; } //No teleporters => no fancy animation
@@ -558,7 +561,9 @@ namespace PipeCircles
 				}
 			}
 		}
+		#endregion Projectiles
 
+		#region AnimationComplete
 		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
 		{
 			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
@@ -627,15 +632,7 @@ namespace PipeCircles
 		
 		private Vector2Int FindCompletedPathIndexes(Transform transformAnimComplete, Direction startingDirection)
 		{
-			//List<PathTransformDirection> activeAnimations = FindCurrentlyActiveAnimations();
 			PathTransformDirection completedAnim = new PathTransformDirection(transformAnimComplete, startingDirection);
-
-			//if (!activeAnimations.Contains(completedAnim))
-			//{
-			//	Debug.LogError("Completed animation not found: " 
-			//		+ (transformAnimComplete.position.x / 100).ToString() + ", "
-			//		+ (transformAnimComplete.position.y / 100).ToString());
-			//}
 
 			int completedColumn = 0;
 			int completedRow = 0;
@@ -671,7 +668,9 @@ namespace PipeCircles
 			}
 			return new Vector2Int(newPathColumn, newPathRow);
 		}
+		#endregion AnimationComplete
 
+		#region LevelOver
 		private void LevelOver()
 		{
 			Piece[] allPieces = FindObjectsOfType<Piece>();
@@ -682,8 +681,10 @@ namespace PipeCircles
 			//TODO What to do about a piece being dragged? Just delete it? Shouldn't charge player for it as an unused piece
 			//TODO Bring up the round scoring explanation screen
 		}
+		#endregion LevelOver
 	}
 
+	#region Structs
 	struct PathTransformDirection
 	{
 		public Transform pathTransform;
@@ -709,6 +710,7 @@ namespace PipeCircles
 			direction = dir;
 		}
 	}
+	#endregion Structs
 
 	public enum AnimStatus { NotStarted, Started, Done }
 }
