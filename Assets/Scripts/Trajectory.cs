@@ -6,73 +6,105 @@ namespace PipeCircles
 {
 	public class Trajectory : MonoBehaviour
 	{
-		public ThetaReturn FindLaunchAngleToTarget(Vector2 startPos, Vector2 endPos, float launchSpeed, float g)
+		private const int PIXELS_PER_BOARD_UNIT = 100;
+
+		public BezierStartingPos BezierCubicMiddlePos(Vector2Int startingPos, Vector2Int endingPos, int i)
 		{
-			float v = launchSpeed;
+			bool usePositiveResult = i % 2 == 0;
+			Vector3 startingWorldPos = BoardPosToWorldPos(startingPos);
+			Vector3 endingWorldPos = BoardPosToWorldPos(endingPos);
+			float deltaXSquared = (endingWorldPos.x - startingWorldPos.x) * (endingWorldPos.x - startingWorldPos.x);
+			float deltaYSquared = (endingWorldPos.y - startingWorldPos.y) * (endingWorldPos.y - startingWorldPos.y);
+			float distBetweenPoints = Mathf.Sqrt(deltaXSquared + deltaYSquared);
+			float slope;
+			float orthogonalSlope;
 
-			//Wikipedia formula below requires a starting position of (0, 0) so need to offset vectors
-			Vector2 endingPos = endPos - startPos;
+			float distToUse = distBetweenPoints * 0.4f; //Adjustable here to get curves to look right
 
-			//Calculating the angle theta required to hit coordinate(x, y) when starting at (0,0)
-			//theta = arctan[(v^2 +- sqrt[v^4 - x^2 * g^2 - 2 * v^2 * y * g)]) / (x * g)]
-			float sqrtPortion1 = v * v * v * v;
-			float sqrtPortion2 = endingPos.x * endingPos.x * g * g;
-			float sqrtPortion3 = 2f * v * v * endingPos.y * g;
-			float sqrtCombined = sqrtPortion1 - sqrtPortion2 - sqrtPortion3;
+			Vector3 result1Pos;
+			Vector3 result1Neg;
+			Vector3 result2Pos;
+			Vector3 result2Neg;
 
-			float sqrtPortion;
-			if (sqrtCombined < 0)
+			if ((endingWorldPos.x - startingWorldPos.x != 0) && (endingWorldPos.y - startingWorldPos.y != 0))
 			{
-				return new ThetaReturn(false, 0, 0); //Negative square roots are a no-go
+				slope = (endingWorldPos.y - startingWorldPos.y) / (endingWorldPos.x - startingWorldPos.x);
+				orthogonalSlope = -1 / slope;
+
+				//From the GeeksForGeeks website
+				//x1 = x0 +- dist * sqrt[1 / (1 + m * m)]
+				//y1 = y0 +- dist * m * sqrt[1 / (1 + m * m)]
+				float sqrtPortion = Mathf.Sqrt(1 / (1 + orthogonalSlope * orthogonalSlope));
+				float x1Pos = startingWorldPos.x + distToUse * sqrtPortion;
+				float x1Neg = startingWorldPos.x - distToUse * sqrtPortion;
+				float y1Pos = startingWorldPos.y + distToUse * orthogonalSlope * sqrtPortion;
+				float y1Neg = startingWorldPos.y - distToUse * orthogonalSlope * sqrtPortion;
+
+				float x2Pos = endingWorldPos.x + distToUse * sqrtPortion;
+				float x2Neg = endingWorldPos.x - distToUse * sqrtPortion;
+				float y2Pos = endingWorldPos.y + distToUse * orthogonalSlope * sqrtPortion;
+				float y2Neg = endingWorldPos.y - distToUse * orthogonalSlope * sqrtPortion;
+
+				result1Pos = new Vector3(x1Pos, y1Pos, 0);
+				result1Neg = new Vector3(x1Neg, y1Neg, 0);
+				result2Pos = new Vector3(x2Pos, y2Pos, 0);
+				result2Neg = new Vector3(x2Neg, y2Neg, 0);
+			} else if (endingWorldPos.x - startingWorldPos.x == 0)
+			{   //Horizontal
+				result1Pos = new Vector3(startingWorldPos.x, startingWorldPos.y + distToUse, 0);
+				result1Neg = new Vector3(startingWorldPos.x, startingWorldPos.y - distToUse, 0);
+				result2Pos = new Vector3(endingWorldPos.x, startingWorldPos.y + distToUse, 0);
+				result2Neg = new Vector3(endingWorldPos.x, startingWorldPos.y - distToUse, 0);
 			} else
-			{
-				sqrtPortion = Mathf.Sqrt(sqrtCombined);
+			{   //Vertical
+				result1Pos = new Vector3(startingWorldPos.x + distToUse, startingWorldPos.y, 0);
+				result1Neg = new Vector3(startingWorldPos.x - distToUse, startingWorldPos.y, 0);
+				result2Pos = new Vector3(endingWorldPos.x + distToUse, startingWorldPos.y, 0);
+				result2Neg = new Vector3(endingWorldPos.x - distToUse, startingWorldPos.y, 0);
 			}
 
-			float theta1 = Mathf.Atan((v * v + sqrtPortion) / (endingPos.x * g));
-			float theta2 = Mathf.Atan((v * v - sqrtPortion) / (endingPos.x * g));
-			ThetaReturn answer = new ThetaReturn(true, theta1, theta2);
-			return answer;
-		}
-
-		public float FindTotalFlightTime(Vector2 startPos, Vector2 endPos, float launchAngle, float launchSpeed, float g)
-		{
-			//Using the formula found on the wikipedia page on projectile motion
-			//t = (1 / g) * [vSinTheta + sqrt( [vSinTheta]^2 + 2gy0)]
-			//where y0 is the amount the starting point is above the ending point
-
-			float y0 = startPos.y - endPos.y;
-			float vSinTheta = launchSpeed * Mathf.Sin(launchAngle);
-			float sqrtPortion = vSinTheta * vSinTheta + 2f * g * y0;
-			if(sqrtPortion < 0)
+			if (usePositiveResult)
 			{
-				return 0;
+				return new BezierStartingPos(result1Pos, result2Pos);
 			} else
 			{
-				sqrtPortion = Mathf.Sqrt(sqrtPortion);
+				return new BezierStartingPos(result1Neg, result2Neg);
 			}
-			return ((vSinTheta + sqrtPortion) / g);
 		}
 
-		public Vector2 FindPosition(Vector2 startPos, float launchAngle, float launchSpeed, float timeSinceLaunch, float g)
+		public Vector3 CalcBezierCubicPos(Vector2Int startingPos, Vector2Int endingPos, Vector3 middle1, Vector3 middle2, float time01)
 		{
-			float xDisplacement = timeSinceLaunch * launchSpeed * Mathf.Cos(launchAngle);
-			float yDisplacement = timeSinceLaunch * launchSpeed * Mathf.Sin(launchAngle) - 0.5f * g * timeSinceLaunch * timeSinceLaunch;
-			return new Vector2(startPos.x + xDisplacement, startPos.y + yDisplacement);
+			Vector3 startingWorldPos = BoardPosToWorldPos(startingPos);
+			Vector3 endingWorldPos = BoardPosToWorldPos(endingPos);
+
+			Vector3 round1a = Vector3.Lerp(startingWorldPos, middle1, time01);
+			Vector3 round1b = Vector3.Lerp(middle1, middle2, time01);
+			Vector3 round1c = Vector3.Lerp(middle2, endingWorldPos, time01);
+			Vector3 round2a = Vector3.Lerp(round1a, round1b, time01);
+			Vector3 round2b = Vector3.Lerp(round1b, round1c, time01);
+			Vector3 round3 = Vector3.Lerp(round2a, round2b, time01);
+
+			return round3;
+		}
+
+		private Vector3 BoardPosToWorldPos(Vector2Int boardPos)
+		{
+			float x = (float) boardPos.x * Board.PIXELS_PER_BOARD_UNIT;
+			float y = (float) boardPos.y * Board.PIXELS_PER_BOARD_UNIT;
+			float z = 0;
+			return new Vector3(x, y, z);
 		}
 	}
 
-	public struct ThetaReturn
+	public struct BezierStartingPos
 	{
-		public bool success;
-		public float theta1;
-		public float theta2;
+		public Vector2 middlePos1;
+		public Vector2 middlePos2;
 
-		public ThetaReturn(bool succeeds, float thetaOne, float thetaTwo)
+		public BezierStartingPos(Vector2 middle1, Vector2 middle2)
 		{
-			success = succeeds;
-			theta1 = thetaOne;
-			theta2 = thetaTwo;
+			middlePos1 = middle1;
+			middlePos2 = middle2;
 		}
 	}
 }

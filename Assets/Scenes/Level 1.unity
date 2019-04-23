@@ -4376,8 +4376,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5be2bdc0cb1ed78449070c6f1dea275b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  g: 10
-  launchSpeed: 10
 --- !u!4 &759469810
 Transform:
   m_ObjectHideFlags: 0
@@ -9802,6 +9800,13 @@ MonoBehaviour:
   matchingTeleportPos:
   - {x: 6, y: 3}
   - {x: 7, y: 7}
+  launchInterval: 5
+  launchSpeed:
+  - 2
+  - 50
+  gravity: 0.5
+  projectilePrefab: {fileID: 4700771646406293839, guid: 9d24c04af3f03fa41accc13324ec1d4f,
+    type: 3}
 --- !u!1 &1439490901
 GameObject:
   m_ObjectHideFlags: 0
