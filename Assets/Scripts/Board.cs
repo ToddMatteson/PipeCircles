@@ -15,7 +15,7 @@ namespace PipeCircles
 		public const string UNTAGGED_TAG = "Untagged";
 
 		[Header("Preplaced Pieces")]
-		[SerializeField] [Tooltip ("Actual object, not prefab")] Transform[] preplacedPieces = null;
+		[SerializeField] [Tooltip("Actual object, not prefab")] Transform[] preplacedPieces = null;
 		[SerializeField] Vector2Int[] preplacedPositions = null;
 
 		[Header("Teleporters")]
@@ -23,9 +23,11 @@ namespace PipeCircles
 		[SerializeField] [Tooltip("Board Location to emerge from")] Vector2Int[] matchingTeleportPos = null;
 
 		[Header("Teleporter Fountains")]
-		[SerializeField] [Tooltip ("Set interval to 0 to turn off")][Range (0f, 60f)] float launchInterval = 0;
+		[SerializeField] [Tooltip("Set interval to 0 to turn off")] [Range(0f, 60f)] float launchInterval = 0;
 		[SerializeField] Transform projectilePrefab = null;
 		//[SerializeField] Transform splashPrefab = null;
+		[SerializeField] [Range(0, 1000f)] float dropletsPerSecond = 50f;
+		[SerializeField] [Range(0, 1000)] int dropletsPerStream = 15;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
@@ -45,9 +47,10 @@ namespace PipeCircles
 		List<Vector2Int> endingBoardPos = new List<Vector2Int>();
 		List<Vector3> bezier1WorldPos = new List<Vector3>();
 		List<Vector3> bezier2WorldPos = new List<Vector3>();
-		List<Transform> projectiles = new List<Transform>();
-		List<bool> projectileCompleted = new List<bool>();
+		List<Transform[]> projectiles = new List<Transform[]>();
+		List<bool[]> projectileCompleted = new List<bool[]>();
 		bool allProjectilesCompleted;
+		ProjectileStatus projectileStatus = ProjectileStatus.NotStarted;
 		#endregion VariableDeclaration
 
 		#region Awake
@@ -75,6 +78,7 @@ namespace PipeCircles
 			trajectory = FindObjectOfType<Trajectory>().GetComponent<Trajectory>();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
 			allProjectilesCompleted = true;
+
 			AddToVectorDictionary();
 			ClearBoard();
 			ClearAnimDict();
@@ -85,14 +89,7 @@ namespace PipeCircles
 		private void Update()
 		{
 			WaterStarts();
-
-			if (allProjectilesCompleted)
-			{
-				LaunchTeleportProjectiles();
-			} else
-			{
-				MoveProjectiles();
-			}
+			ProjectileDirector();
 		}
 
 		#region BoardSetUp
@@ -189,8 +186,8 @@ namespace PipeCircles
 						endingBoardPos.Add(matchingTeleportPos[i]);
 						bezier1WorldPos.Add(trajectory.BezierCubicMiddlePos(teleportPos[i], matchingTeleportPos[i], i).middlePos1);
 						bezier2WorldPos.Add(trajectory.BezierCubicMiddlePos(teleportPos[i], matchingTeleportPos[i], i).middlePos2);
-						projectiles.Add(null);
-						projectileCompleted.Add(true);
+						projectiles.Add(new Transform[dropletsPerStream]);
+						projectileCompleted.Add(new bool[dropletsPerStream]);
 					}
 				}
 			}
@@ -503,6 +500,30 @@ namespace PipeCircles
 		#endregion Traversal
 
 		#region Projectiles
+		private void ProjectileDirector()
+		{
+			switch (projectileStatus)
+			{
+				case ProjectileStatus.NotStarted:
+					LaunchTeleportProjectiles();
+					return;
+				case ProjectileStatus.LaunchStarted:
+					LaunchTeleportProjectiles();
+					MoveProjectiles();
+					return;
+				case ProjectileStatus.LaunchFinished:
+					MoveProjectiles();
+					return;
+				case ProjectileStatus.LandingStarted:
+					MoveProjectiles();
+					return;
+				case ProjectileStatus.LandingFinished:
+					return;
+				default:
+					return;
+			}
+		}
+
 		private void LaunchTeleportProjectiles()
 		{
 			if (teleportDict.Count < 2) { return; } //No teleporters => no fancy animation
@@ -512,13 +533,25 @@ namespace PipeCircles
 
 			if (timeSinceLastProjectiles < launchInterval) { return; }
 			timeSinceLastProjectiles = 0;
+			projectileStatus = ProjectileStatus.LaunchStarted;
 
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
-				Transform newProjectile = Instantiate(projectilePrefab, BoardPosToWorldPos(startingBoardPos[i]), Quaternion.identity);
-				projectiles[i] = newProjectile;
-				projectileCompleted[i] = false;
-				allProjectilesCompleted = false;
+				for (int j = 0; j < dropletsPerStream; j++)
+				{
+					if (timeSinceLastProjectiles > launchInterval + j / dropletsPerSecond)
+					{
+						Transform newProjectile = Instantiate(projectilePrefab, BoardPosToWorldPos(startingBoardPos[i]), Quaternion.identity);
+						projectiles[i][j] = newProjectile;
+						projectileCompleted[i][j] = false;
+						allProjectilesCompleted = false;
+					}
+				}
+			}
+
+			if (timeSinceLastProjectiles > launchInterval + (dropletsPerStream - 1) / dropletsPerSecond)
+			{
+				projectileStatus = ProjectileStatus.LaunchFinished;
 			}
 		}
 
@@ -538,26 +571,38 @@ namespace PipeCircles
 
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
-				projectiles[i].position = trajectory.CalcBezierCubicPos(startingBoardPos[i], 
-																		endingBoardPos[i],
-																		bezier1WorldPos[i],
-																		bezier2WorldPos[i],
-																		timeSinceLastProjectiles);
-				if (timeSinceLastProjectiles > 1)
+				for (int j = 0; j < dropletsPerStream; j++)
 				{
-					//Instantiate(splashPrefab, BoardPosToWorldPos(endingBoardPos[i]), Quaternion.identity);
-					Destroy(projectiles[i].gameObject);
-					projectiles[i] = null;
-					projectileCompleted[i] = true;
+					if (projectiles[i][j] != null) //Uncreated / unlaunched projectiles ignored
+					{
+						float spawningDelay = j / dropletsPerSecond;
+						projectiles[i][j].position = trajectory.CalcBezierCubicPos(startingBoardPos[i],
+																				endingBoardPos[i],
+																				bezier1WorldPos[i],
+																				bezier2WorldPos[i],
+																				timeSinceLastProjectiles - spawningDelay);
+						if (timeSinceLastProjectiles > launchInterval + 1 + j / dropletsPerSecond)
+						{ //1 is for the completion of the first projectile, rest is for the spawning delay
+							projectileStatus = ProjectileStatus.LandingStarted;
+							
+							//Instantiate(splashPrefab, BoardPosToWorldPos(endingBoardPos[i]), Quaternion.identity);
+							Destroy(projectiles[i][j].gameObject);
+							projectiles[i][j] = null;
+							projectileCompleted[i][j] = true;
+						}
+					}
 				}
 			}
 
 			allProjectilesCompleted = true;
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
-				if (!(allProjectilesCompleted && projectileCompleted[i]))
+				for (int j = 0; j < dropletsPerStream; j++)
 				{
-					allProjectilesCompleted = false;
+					if (!(allProjectilesCompleted && projectileCompleted[i][j]))
+					{
+						allProjectilesCompleted = false;
+					}
 				}
 			}
 		}
@@ -713,4 +758,6 @@ namespace PipeCircles
 	#endregion Structs
 
 	public enum AnimStatus { NotStarted, Started, Done }
+
+	public enum ProjectileStatus { NotStarted, LaunchStarted, LaunchFinished, LandingStarted, LandingFinished}
 }

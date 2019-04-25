@@ -7,6 +7,8 @@ namespace PipeCircles
 	public class Trajectory : MonoBehaviour
 	{
 		private const int PIXELS_PER_BOARD_UNIT = 100;
+		private const float PERCENT_PROJECTILES_REDUCTION = 0.2f; //Don't go above 0.5 since it is being brought in from both sides
+		private const float DISTANCE_AWAY_FROM_SLOPE_FACTOR = 0.4f; //Adjustable to get curves to look right
 
 		public BezierStartingPos BezierCubicMiddlePos(Vector2Int startingPos, Vector2Int endingPos, int i)
 		{
@@ -19,7 +21,7 @@ namespace PipeCircles
 			float slope;
 			float orthogonalSlope;
 
-			float distToUse = distBetweenPoints * 0.4f; //Adjustable here to get curves to look right
+			float distToUse = distBetweenPoints * DISTANCE_AWAY_FROM_SLOPE_FACTOR; 
 
 			Vector3 result1Pos;
 			Vector3 result1Neg;
@@ -31,7 +33,6 @@ namespace PipeCircles
 				slope = (endingWorldPos.y - startingWorldPos.y) / (endingWorldPos.x - startingWorldPos.x);
 				orthogonalSlope = -1 / slope;
 
-				//From the GeeksForGeeks website
 				//x1 = x0 +- dist * sqrt[1 / (1 + m * m)]
 				//y1 = y0 +- dist * m * sqrt[1 / (1 + m * m)]
 				float sqrtPortion = Mathf.Sqrt(1 / (1 + orthogonalSlope * orthogonalSlope));
@@ -45,24 +46,34 @@ namespace PipeCircles
 				float y2Pos = endingWorldPos.y + distToUse * orthogonalSlope * sqrtPortion;
 				float y2Neg = endingWorldPos.y - distToUse * orthogonalSlope * sqrtPortion;
 
-				result1Pos = new Vector3(x1Pos, y1Pos, 0);
-				result1Neg = new Vector3(x1Neg, y1Neg, 0);
-				result2Pos = new Vector3(x2Pos, y2Pos, 0);
-				result2Neg = new Vector3(x2Neg, y2Neg, 0);
-			} else if (endingWorldPos.x - startingWorldPos.x == 0)
+				Vector3 original1Pos = new Vector3(x1Pos, y1Pos, 0);
+				Vector3 original1Neg = new Vector3(x1Neg, y1Neg, 0);
+				Vector3 original2Pos = new Vector3(x2Pos, y2Pos, 0);
+				Vector3 original2Neg = new Vector3(x2Neg, y2Neg, 0);
+
+				result1Pos = Vector3.Lerp(original1Pos, original2Pos, PERCENT_PROJECTILES_REDUCTION);
+				result1Neg = Vector3.Lerp(original1Neg, original2Neg, PERCENT_PROJECTILES_REDUCTION);
+				result2Pos = Vector3.Lerp(original1Pos, original2Pos, 1 - PERCENT_PROJECTILES_REDUCTION);
+				result2Neg = Vector3.Lerp(original1Neg, original2Neg, 1 - PERCENT_PROJECTILES_REDUCTION);
+
+			} else if (endingWorldPos.y - startingWorldPos.y == 0)
 			{   //Horizontal
-				result1Pos = new Vector3(startingWorldPos.x, startingWorldPos.y + distToUse, 0);
-				result1Neg = new Vector3(startingWorldPos.x, startingWorldPos.y - distToUse, 0);
-				result2Pos = new Vector3(endingWorldPos.x, startingWorldPos.y + distToUse, 0);
-				result2Neg = new Vector3(endingWorldPos.x, startingWorldPos.y - distToUse, 0);
+				float xBringIn = (endingWorldPos.x - startingWorldPos.x) * PERCENT_PROJECTILES_REDUCTION;
+
+				result1Pos = new Vector3(startingWorldPos.x + xBringIn, startingWorldPos.y + distToUse, 0);
+				result1Neg = new Vector3(startingWorldPos.x + xBringIn, startingWorldPos.y - distToUse, 0);
+				result2Pos = new Vector3(endingWorldPos.x - xBringIn, endingWorldPos.y + distToUse, 0);
+				result2Neg = new Vector3(endingWorldPos.x - xBringIn, endingWorldPos.y - distToUse, 0);
 			} else
 			{   //Vertical
-				result1Pos = new Vector3(startingWorldPos.x + distToUse, startingWorldPos.y, 0);
-				result1Neg = new Vector3(startingWorldPos.x - distToUse, startingWorldPos.y, 0);
-				result2Pos = new Vector3(endingWorldPos.x + distToUse, startingWorldPos.y, 0);
-				result2Neg = new Vector3(endingWorldPos.x - distToUse, startingWorldPos.y, 0);
-			}
+				float yBringIn = (endingWorldPos.y - startingWorldPos.y) * PERCENT_PROJECTILES_REDUCTION;
 
+				result1Pos = new Vector3(startingWorldPos.x + distToUse, startingWorldPos.y + yBringIn, 0);
+				result1Neg = new Vector3(startingWorldPos.x - distToUse, startingWorldPos.y + yBringIn, 0);
+				result2Pos = new Vector3(endingWorldPos.x + distToUse, endingWorldPos.y - yBringIn, 0);
+				result2Neg = new Vector3(endingWorldPos.x - distToUse, endingWorldPos.y - yBringIn, 0);
+			}
+			
 			if (usePositiveResult)
 			{
 				return new BezierStartingPos(result1Pos, result2Pos);
