@@ -18,6 +18,9 @@ namespace PipeCircles
 		[SerializeField] [Tooltip("Actual object, not prefab")] Transform[] preplacedPieces = null;
 		[SerializeField] Vector2Int[] preplacedPositions = null;
 
+		[Header("Level Over")]
+		[SerializeField] bool deadEndStopsLevel = false;
+		
 		[Header("Teleporters")]
 		[SerializeField] [Tooltip("Board Location, also add to Preplaced Pieces")] Vector2Int[] teleportPos = null;
 		[SerializeField] [Tooltip("Board Location to emerge from")] Vector2Int[] matchingTeleportPos = null;
@@ -37,6 +40,7 @@ namespace PipeCircles
 		Dictionary<PathTransformDirection, AnimStatus> animState = new Dictionary<PathTransformDirection, AnimStatus>();
 		Dictionary<Vector2Int, Vector2Int> teleportDict = new Dictionary<Vector2Int, Vector2Int>(); //Board pos
 		Dictionary<Vector2Int, Vector2Int> splitterCameFromPathIndexes = new Dictionary<Vector2Int, Vector2Int>(); //working backwards to find starting path pos 
+		List<bool> columnTraversed = new List<bool>();
 
 		bool waterFlowStarted = false;
 		int numSplits = 0;
@@ -51,7 +55,6 @@ namespace PipeCircles
 		List<Transform[]> projectiles = new List<Transform[]>();
 		List<bool[]> projectileCompleted = new List<bool[]>();
 		List<Vector3[]> jitterVector = new List<Vector3[]>();
-		bool allProjectilesCompleted;
 		ProjectileStatus projectileStatus = ProjectileStatus.NotStarted;
 		float waitingPeriodStart = 0;
 		#endregion VariableDeclaration
@@ -80,12 +83,12 @@ namespace PipeCircles
 		{
 			trajectory = FindObjectOfType<Trajectory>().GetComponent<Trajectory>();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
-			allProjectilesCompleted = true;
 			waitingPeriodStart = Time.time;
 
 			AddToVectorDictionary();
 			ClearBoard();
 			ClearAnimDict();
+			ClearColumnTraversed();
 			AddPreplacedPiecesToBoard();
 			AddTeleporters();
 		}
@@ -120,6 +123,11 @@ namespace PipeCircles
 		private void ClearAnimDict()
 		{
 			animState.Clear();
+		}
+
+		private void ClearColumnTraversed ()
+		{
+			columnTraversed.Clear();
 		}
 
 		private void AddPreplacedPiecesToBoard()
@@ -245,6 +253,11 @@ namespace PipeCircles
 			path.Add(new List<PathTransformDirection>());
 			path[0].Add(new PathTransformDirection(board[preplacedPositions[0].x, preplacedPositions[0].y], Direction.Top));
 
+			if (columnTraversed.Count == 0) //Might already exist since pathing is called many times 
+			{
+				columnTraversed.Add(false);
+			}
+
 			FindColumnPath(path, Direction.Nowhere, 0);
 
 			UpdateAnimDictionaries();
@@ -270,6 +283,11 @@ namespace PipeCircles
 				if (currentColumn >= path.Count) //New column needed before GetNewBoardPos checks it
 				{
 					path.Add(new List<PathTransformDirection>());
+				}
+
+				if (currentColumn >= columnTraversed.Count) //Can't use path.Count here since path is reset often
+				{
+					columnTraversed.Add(false);
 				}
 
 				Vector2Int potentialBoardPos = GetNewBoardPos(path, firstExitDirection, currentColumn, oldColumn);
@@ -550,7 +568,6 @@ namespace PipeCircles
 							projectiles[i][j].transform.SetParent(projectileParent);
 							projectiles[i][j].transform.SetAsLastSibling();
 							projectileCompleted[i][j] = false;
-							allProjectilesCompleted = false;
 							jitterVector[i][j] = new Vector3(0, 0, 0);
 						}
 					}
@@ -606,7 +623,7 @@ namespace PipeCircles
 				}
 			}
 
-			allProjectilesCompleted = true;
+			bool allProjectilesCompleted = true;
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
 				for (int j = 0; j < dropletsPerStream; j++)
@@ -639,8 +656,8 @@ namespace PipeCircles
 			Direction secondExitDirection = activePiece.SecondExitDirection();
 			bool isSplitter = secondExitDirection != Direction.Nowhere;
 
-			bool primaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
-			bool secondaryElementMissing = false; //Could possibly use this to call LevelOver, but that depends on game rules
+			bool primaryElementMissing = false; 
+			bool secondaryElementMissing = false;
 
 			if (!isSplitter)
 			{
@@ -650,7 +667,14 @@ namespace PipeCircles
 					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
 				} else
 				{
-					//LevelOver(); //Could be level over here depending on the rules I want to use but very likely not
+					if (deadEndStopsLevel)
+					{
+						LevelOver();
+						return;
+					} else
+					{
+						columnTraversed[activeColumn] = true;
+					}
 				}
 			} else
 			{
@@ -686,10 +710,37 @@ namespace PipeCircles
 					secondaryElementMissing = true;
 				}
 
+				if (primaryElementMissing || secondaryElementMissing)
+				{
+					if (deadEndStopsLevel)
+					{
+						LevelOver();
+						return;
+					}
+				}
+
 				if (primaryElementMissing && secondaryElementMissing)
 				{
-					//TODO Maybe call LevelOver here, unknown at this point
+					if (!deadEndStopsLevel) //Checking here to avoid calling LevelOver twice
+					{
+						columnTraversed[activeColumn] = true;
+					}
 				}
+			}
+
+			bool allColumnsTraversed = true;
+			for (int i = 0; i < columnTraversed.Count; i++)
+			{
+				if (!(columnTraversed[i] && allColumnsTraversed))
+				{
+					allColumnsTraversed = false;
+				}
+			}
+
+			if (allColumnsTraversed)
+			{
+				LevelOver();
+				return;
 			}
 		}
 		
@@ -775,7 +826,10 @@ namespace PipeCircles
 	}
 	#endregion Structs
 
+	#region Enums
 	public enum AnimStatus { NotStarted, Started, Done }
 
 	public enum ProjectileStatus { NotStarted, LaunchStarted, LaunchFinished }
+	#endregion Enums
+
 }

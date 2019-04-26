@@ -9794,6 +9794,7 @@ MonoBehaviour:
   - {x: 4, y: 6}
   - {x: 0, y: 3}
   - {x: 6, y: 3}
+  deadEndStopsLevel: 0
   teleportPos:
   - {x: 0, y: 0}
   - {x: 11, y: 8}
@@ -9806,6 +9807,7 @@ MonoBehaviour:
   dropletsPerSecond: 100
   dropletsPerStream: 30
   projectileParent: {fileID: 759469810}
+  streamJittering: 1
 --- !u!1 &1439490901
 GameObject:
   m_ObjectHideFlags: 0
