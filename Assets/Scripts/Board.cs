@@ -26,8 +26,10 @@ namespace PipeCircles
 		[SerializeField] [Tooltip("Set interval to 0 to turn off")] [Range(0f, 60f)] float launchInterval = 0;
 		[SerializeField] Transform projectilePrefab = null;
 		//[SerializeField] Transform splashPrefab = null;
-		[SerializeField] [Range(0, 1000f)] float dropletsPerSecond = 50f;
-		[SerializeField] [Range(0, 1000)] int dropletsPerStream = 15;
+		[SerializeField] [Range(0, 1000f)] float dropletsPerSecond = 100f;
+		[SerializeField] [Range(0, 1000)] int dropletsPerStream = 30;
+		[SerializeField] Transform projectileParent = null;
+		[SerializeField] bool streamJittering = true;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
@@ -42,15 +44,16 @@ namespace PipeCircles
 
 		//Teleporter projectile stuff
 		Trajectory trajectory;
-		float timeSinceLastProjectiles = 0;
 		List<Vector2Int> startingBoardPos = new List<Vector2Int>();
 		List<Vector2Int> endingBoardPos = new List<Vector2Int>();
 		List<Vector3> bezier1WorldPos = new List<Vector3>();
 		List<Vector3> bezier2WorldPos = new List<Vector3>();
 		List<Transform[]> projectiles = new List<Transform[]>();
 		List<bool[]> projectileCompleted = new List<bool[]>();
+		List<Vector3[]> jitterVector = new List<Vector3[]>();
 		bool allProjectilesCompleted;
 		ProjectileStatus projectileStatus = ProjectileStatus.NotStarted;
+		float waitingPeriodStart = 0;
 		#endregion VariableDeclaration
 
 		#region Awake
@@ -78,6 +81,7 @@ namespace PipeCircles
 			trajectory = FindObjectOfType<Trajectory>().GetComponent<Trajectory>();
 			timer = FindObjectOfType<Timer>().GetComponent<Timer>();
 			allProjectilesCompleted = true;
+			waitingPeriodStart = Time.time;
 
 			AddToVectorDictionary();
 			ClearBoard();
@@ -188,6 +192,7 @@ namespace PipeCircles
 						bezier2WorldPos.Add(trajectory.BezierCubicMiddlePos(teleportPos[i], matchingTeleportPos[i], i).middlePos2);
 						projectiles.Add(new Transform[dropletsPerStream]);
 						projectileCompleted.Add(new bool[dropletsPerStream]);
+						jitterVector.Add(new Vector3[dropletsPerStream]);
 					}
 				}
 			}
@@ -514,11 +519,6 @@ namespace PipeCircles
 				case ProjectileStatus.LaunchFinished:
 					MoveProjectiles();
 					return;
-				case ProjectileStatus.LandingStarted:
-					MoveProjectiles();
-					return;
-				case ProjectileStatus.LandingFinished:
-					return;
 				default:
 					return;
 			}
@@ -529,33 +529,41 @@ namespace PipeCircles
 			if (teleportDict.Count < 2) { return; } //No teleporters => no fancy animation
 			if (launchInterval < 0.001f) { return; } //Easy way to disable
 
-			timeSinceLastProjectiles += Time.deltaTime;
+			if (Time.time - waitingPeriodStart < launchInterval) { return; }
 
-			if (timeSinceLastProjectiles < launchInterval) { return; }
-			timeSinceLastProjectiles = 0;
 			projectileStatus = ProjectileStatus.LaunchStarted;
 
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
 				for (int j = 0; j < dropletsPerStream; j++)
 				{
-					if (timeSinceLastProjectiles > launchInterval + j / dropletsPerSecond)
+					if (projectiles[i][j] == null) //No need to keep instantiating new projectiles if already done
 					{
-						Transform newProjectile = Instantiate(projectilePrefab, BoardPosToWorldPos(startingBoardPos[i]), Quaternion.identity);
-						projectiles[i][j] = newProjectile;
-						projectileCompleted[i][j] = false;
-						allProjectilesCompleted = false;
+						float spawningDelay = j / dropletsPerSecond;
+						if (Time.time - waitingPeriodStart > launchInterval + spawningDelay)
+						{
+							Transform newProjectile = Instantiate(
+										projectilePrefab, 
+										BoardPosToWorldPos(startingBoardPos[i]),
+										Quaternion.identity);
+							projectiles[i][j] = newProjectile;
+							projectiles[i][j].transform.SetParent(projectileParent);
+							projectiles[i][j].transform.SetAsLastSibling();
+							projectileCompleted[i][j] = false;
+							allProjectilesCompleted = false;
+							jitterVector[i][j] = new Vector3(0, 0, 0);
+						}
 					}
 				}
 			}
 
-			if (timeSinceLastProjectiles > launchInterval + (dropletsPerStream - 1) / dropletsPerSecond)
+			if (Time.time - waitingPeriodStart > launchInterval + (dropletsPerStream - 1) / dropletsPerSecond)
 			{
 				projectileStatus = ProjectileStatus.LaunchFinished;
 			}
 		}
 
-		private Vector3 BoardPosToWorldPos(Vector2Int boardPos)
+		private static Vector3 BoardPosToWorldPos(Vector2Int boardPos)
 		{
 			float x = (float) boardPos.x * PIXELS_PER_BOARD_UNIT;
 			float y = (float) boardPos.y * PIXELS_PER_BOARD_UNIT;
@@ -567,8 +575,6 @@ namespace PipeCircles
 		{
 			if (launchInterval < 0.001f) { return; }
 
-			timeSinceLastProjectiles += Time.deltaTime;
-
 			for (int i = 0; i < startingBoardPos.Count; i++)
 			{
 				for (int j = 0; j < dropletsPerStream; j++)
@@ -576,15 +582,21 @@ namespace PipeCircles
 					if (projectiles[i][j] != null) //Uncreated / unlaunched projectiles ignored
 					{
 						float spawningDelay = j / dropletsPerSecond;
-						projectiles[i][j].position = trajectory.CalcBezierCubicPos(startingBoardPos[i],
-																				endingBoardPos[i],
-																				bezier1WorldPos[i],
-																				bezier2WorldPos[i],
-																				timeSinceLastProjectiles - spawningDelay);
-						if (timeSinceLastProjectiles > launchInterval + 1 + j / dropletsPerSecond)
-						{ //1 is for the completion of the first projectile, rest is for the spawning delay
-							projectileStatus = ProjectileStatus.LandingStarted;
-							
+						float percentComplete = Mathf.Min(Time.time - waitingPeriodStart - launchInterval - spawningDelay, 1f);
+						projectiles[i][j].position = trajectory.CalcBezierCubicPos(
+								startingBoardPos[i],
+								endingBoardPos[i],
+								bezier1WorldPos[i],
+								bezier2WorldPos[i],
+								percentComplete);
+
+						if(streamJittering)
+						{
+							projectiles[i][j].position = projectiles[i][j].position + jitterVector[i][j];
+						}
+
+						if (percentComplete >= 1f)
+						{				
 							//Instantiate(splashPrefab, BoardPosToWorldPos(endingBoardPos[i]), Quaternion.identity);
 							Destroy(projectiles[i][j].gameObject);
 							projectiles[i][j] = null;
@@ -604,6 +616,12 @@ namespace PipeCircles
 						allProjectilesCompleted = false;
 					}
 				}
+			}
+
+			if(allProjectilesCompleted)
+			{
+				waitingPeriodStart = Time.time;
+				projectileStatus = ProjectileStatus.NotStarted;
 			}
 		}
 		#endregion Projectiles
@@ -759,5 +777,5 @@ namespace PipeCircles
 
 	public enum AnimStatus { NotStarted, Started, Done }
 
-	public enum ProjectileStatus { NotStarted, LaunchStarted, LaunchFinished, LandingStarted, LandingFinished}
+	public enum ProjectileStatus { NotStarted, LaunchStarted, LaunchFinished }
 }

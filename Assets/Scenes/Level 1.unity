@@ -403,7 +403,7 @@ RectTransform:
   - {fileID: 1644041368}
   - {fileID: 1358611018}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2209,7 +2209,7 @@ Transform:
   m_LocalScale: {x: 100, y: 100, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &246320858
 SpriteRenderer:
@@ -4358,7 +4358,7 @@ GameObject:
   - component: {fileID: 759469810}
   - component: {fileID: 759469809}
   m_Layer: 0
-  m_Name: TrajectorySergeant
+  m_Name: Projectiles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4384,11 +4384,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 759469808}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 410.55463, y: 436.81827, z: 24.039976}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &775601243
 GameObject:
@@ -9525,7 +9525,7 @@ Transform:
   m_Children:
   - {fileID: 580131972}
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1403962582
 MonoBehaviour:
@@ -9766,7 +9766,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1434374207
 MonoBehaviour:
@@ -9792,19 +9792,20 @@ MonoBehaviour:
   - {x: 5, y: 5}
   - {x: 7, y: 5}
   - {x: 4, y: 6}
-  - {x: 11, y: 3}
+  - {x: 0, y: 3}
   - {x: 6, y: 3}
   teleportPos:
-  - {x: 11, y: 3}
-  - {x: 6, y: 3}
+  - {x: 0, y: 0}
+  - {x: 11, y: 8}
   matchingTeleportPos:
-  - {x: 6, y: 3}
-  - {x: 11, y: 3}
+  - {x: 11, y: 8}
+  - {x: 0, y: 0}
   launchInterval: 5
   projectilePrefab: {fileID: 4700771646406293839, guid: 9d24c04af3f03fa41accc13324ec1d4f,
     type: 3}
-  dropletsPerSecond: 50
-  dropletsPerStream: 15
+  dropletsPerSecond: 100
+  dropletsPerStream: 30
+  projectileParent: {fileID: 759469810}
 --- !u!1 &1439490901
 GameObject:
   m_ObjectHideFlags: 0
@@ -11062,7 +11063,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1671511463
 GameObject:
@@ -11459,7 +11460,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1744966411
 GameObject:
@@ -11743,12 +11744,12 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 600
+      value: 1100
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 300
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
@@ -12825,12 +12826,12 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 300
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
@@ -13473,7 +13474,7 @@ Transform:
   - {fileID: 293718885}
   - {fileID: 1231986902}
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2006882186
 GameObject:
