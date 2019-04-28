@@ -10,15 +10,17 @@ namespace PipeCircles
 		[SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 1f;
 
 		Transform canvasTransform;
-		float currentMovementTime;
-		bool moveCanvas = false;
-		bool isCanvasUp = true;
-		bool canMove = false;
-		float yMoveAmount = 1080f;
 		Vector3 upPos;
 		Vector3 downPos;
-
-		private void Awake()
+		float yMoveAmount = 1080f;
+		GameObject[] buttons;
+		float currentMovementTime;
+		bool movingCanvas = false;
+		bool isCanvasUp = true;
+		bool canMove = false;
+		bool canClickLevelCanvas = true;
+		
+		private void Start()
 		{
 			if (menuCanvas == null)
 			{
@@ -28,6 +30,7 @@ namespace PipeCircles
 				canvasTransform = menuCanvas.transform;
 				upPos = canvasTransform.position;
 				downPos = upPos + yMoveAmount * Vector3.down;
+				buttons = GameObject.FindGameObjectsWithTag("LevelCanvasClickable"); 
 			}
 		}
 
@@ -41,31 +44,48 @@ namespace PipeCircles
 
 		public void OnMouseUp()
 		{
-			if (canvasTransform != null && !moveCanvas)
+			if (canvasTransform != null && !movingCanvas)
 			{
-				moveCanvas = true;
+				movingCanvas = true;
 				canMove = true;
 				if (isCanvasUp)
 				{
-					canvasTransform.gameObject.SetActive(true);	
+					canvasTransform.gameObject.SetActive(true);
 					MoveCanvas(false);
 				} else
 				{
+					EnableLevelButtons(); //Moving up, so buttons need to be on first
 					MoveCanvas(true);
 				}		
 			}
 		}
 
+		private void DisableLevelButtons()
+		{
+			foreach (GameObject button in buttons)
+			{
+				button.gameObject.SetActive(false);
+			}
+		}
+
+		private void EnableLevelButtons()
+		{
+			foreach (GameObject button in buttons)
+			{
+				button.gameObject.SetActive(true);
+			}
+		}
+
 		private void MoveCanvas(bool moveCanvasUp)
 		{
-			if (moveCanvas)
+			if (movingCanvas)
 			{
 				currentMovementTime += Time.deltaTime;
 
 				if (currentMovementTime > totalMovementTime)
 				{
 					currentMovementTime = totalMovementTime;
-					moveCanvas = false;
+					movingCanvas = false;
 				}
 
 				float t = currentMovementTime / totalMovementTime;
@@ -80,7 +100,12 @@ namespace PipeCircles
 			} else
 			{
 				currentMovementTime = 0;
-				isCanvasUp = !isCanvasUp;
+				isCanvasUp = !isCanvasUp; //Movement finished, so the canvas is the opposite spot now 
+				if (!isCanvasUp) 
+				{
+					DisableLevelButtons();
+				}
+				//canClickLevelCanvas = false;
 				canMove = false;
 			}
 		}

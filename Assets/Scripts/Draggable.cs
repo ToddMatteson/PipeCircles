@@ -119,7 +119,10 @@ namespace PipeCircles
 				Vector3 pos1 = hit.transform.position;
 				mouseOffset = new Vector2(pos1.x, pos1.y) - hit.point;
 
-				return hit.collider.gameObject;
+				if (!EventSystem.current.IsPointerOverGameObject())
+				{
+					return hit.collider.gameObject;
+				}
 			}
 			return null;
 		}
