@@ -9,6 +9,7 @@ TagManager:
   - Board
   - TimerText
   - LevelCanvasClickable
+  - MenuCoordinator
   layers:
   - Default
   - TransparentFX
