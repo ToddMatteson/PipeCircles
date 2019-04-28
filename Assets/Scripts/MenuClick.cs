@@ -18,7 +18,7 @@ namespace PipeCircles
 		bool movingCanvas = false;
 		bool isCanvasUp = true;
 		bool canMove = false;
-		bool canClickLevelCanvas = true;
+		//bool canClickLevelCanvas = true;
 		
 		private void Start()
 		{
@@ -89,12 +89,12 @@ namespace PipeCircles
 				}
 
 				float t = currentMovementTime / totalMovementTime;
-				if (moveCanvasUp) //Move up should move at constant time, move down should move at smoothed time
+				if (moveCanvasUp)
 				{
 					canvasTransform.position = Vector3.Lerp(downPos, upPos, t);
 				} else
 				{
-					t = t * t * t * (t * (6f * t - 15f) + 10f);
+					//t = t * t * t * (t * (6f * t - 15f) + 10f); //Uncomment to make movement like water drops
 					canvasTransform.position = Vector3.Lerp(upPos, downPos, t);
 				}
 			} else
@@ -105,7 +105,6 @@ namespace PipeCircles
 				{
 					DisableLevelButtons();
 				}
-				//canClickLevelCanvas = false;
 				canMove = false;
 			}
 		}

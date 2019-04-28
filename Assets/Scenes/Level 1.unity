@@ -2235,7 +2235,7 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 12bf23fd1232d3e4186ecdf68dcac042,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 500
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 12bf23fd1232d3e4186ecdf68dcac042,
         type: 3}
@@ -3729,7 +3729,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 514273124}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 57, y: 493, z: 0}
+  m_LocalPosition: {x: 0, y: 495, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 948839868}
@@ -3748,7 +3748,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuCanvas: {fileID: 1575934840}
-  totalMovementTime: 0.75
+  totalMovementTime: 1
 --- !u!58 &514273127
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -3762,9 +3762,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.5070572, y: -0.0004043579}
+  m_Offset: {x: 0.4792137, y: -0.0004043579}
   serializedVersion: 2
-  m_Radius: 37.505043
+  m_Radius: 48.351955
 --- !u!212 &514273128
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3802,7 +3802,7 @@ SpriteRenderer:
   m_SortingLayerID: 982117951
   m_SortingLayer: 4
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: a05217b824a04dd4c82467d32cc3193c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 70ec9888f9844c94ab5349ac813863c1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5524,7 +5524,7 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 2c17a86df33a00441aa21cf1e260bf37,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 600
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 2c17a86df33a00441aa21cf1e260bf37,
         type: 3}
@@ -6040,7 +6040,7 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 34abb59ff9218554aa995d594a150efb,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 600
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 34abb59ff9218554aa995d594a150efb,
         type: 3}
@@ -6142,7 +6142,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 9ae3562d0144409459086aa78f8ffec3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -9226,7 +9226,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 9ae3562d0144409459086aa78f8ffec3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10149,19 +10149,19 @@ MonoBehaviour:
   - {fileID: 2070374855}
   - {fileID: 1794296256}
   preplacedPositions:
-  - {x: 5, y: 6}
+  - {x: 5, y: 8}
   - {x: 5, y: 5}
-  - {x: 7, y: 5}
-  - {x: 4, y: 6}
-  - {x: 0, y: 3}
-  - {x: 6, y: 3}
+  - {x: 7, y: 8}
+  - {x: 4, y: 8}
+  - {x: 0, y: 8}
+  - {x: 11, y: 8}
   deadEndStopsLevel: 0
   teleportPos:
-  - {x: 0, y: 0}
+  - {x: 0, y: 8}
   - {x: 11, y: 8}
   matchingTeleportPos:
   - {x: 11, y: 8}
-  - {x: 0, y: 0}
+  - {x: 0, y: 8}
   launchInterval: 5
   projectilePrefab: {fileID: 4700771646406293839, guid: 9d24c04af3f03fa41accc13324ec1d4f,
     type: 3}
@@ -11660,7 +11660,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684158185}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 671, y: 496, z: 0}
+  m_LocalPosition: {x: 0, y: 495, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1331373234}
@@ -11679,7 +11679,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuCanvas: {fileID: 166736919}
-  totalMovementTime: 0.75
+  totalMovementTime: 1
 --- !u!58 &1684158188
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -11693,9 +11693,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.5070572, y: -0.0004043579}
+  m_Offset: {x: -0.013824463, y: -0.0004043579}
   serializedVersion: 2
-  m_Radius: 37.505043
+  m_Radius: 48.845
 --- !u!212 &1684158189
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -11733,7 +11733,7 @@ SpriteRenderer:
   m_SortingLayerID: 982117951
   m_SortingLayer: 4
   m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: a05217b824a04dd4c82467d32cc3193c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 70ec9888f9844c94ab5349ac813863c1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -13439,7 +13439,7 @@ PrefabInstance:
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 183217177537340231, guid: 8b19fac0d841c6345b545a182a5256fc,
         type: 3}
@@ -14316,22 +14316,22 @@ PrefabInstance:
     - target: {fileID: 3818373074455677891, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: startingTime
-      value: 30
+      value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 668.5179
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 339.29373
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 20.477865
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
