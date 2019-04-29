@@ -13,6 +13,7 @@ namespace PipeCircles
 		public const int BOARD_UNITS_HIGH = 9;
 		public const int PIXELS_PER_BOARD_UNIT = 100;
 		public const string UNTAGGED_TAG = "Untagged";
+		public const int SPLASH_FRAMES_PER_SECOND = 30;
 
 		[Header("Preplaced Pieces")]
 		[SerializeField] [Tooltip("Actual object, not prefab")] Transform[] preplacedPieces = null;
@@ -33,6 +34,9 @@ namespace PipeCircles
 		[SerializeField] [Range(0, 1000)] int dropletsPerStream = 30;
 		[SerializeField] Transform projectileParent = null;
 		[SerializeField] bool streamJittering = true;
+
+		[Header("Splashes")]
+		[SerializeField] Sprite[] splashSprites = null;
 
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
@@ -57,6 +61,10 @@ namespace PipeCircles
 		List<Vector3[]> jitterVector = new List<Vector3[]>();
 		ProjectileStatus projectileStatus = ProjectileStatus.NotStarted;
 		float waitingPeriodStart = 0;
+
+		//Splash stuff
+		List<SplashStatus> splashStatus = new List<SplashStatus>();
+
 		#endregion VariableDeclaration
 
 		#region Awake
@@ -529,16 +537,21 @@ namespace PipeCircles
 			{
 				case ProjectileStatus.NotStarted:
 					LaunchTeleportProjectiles();
-					return;
+					break;
 				case ProjectileStatus.LaunchStarted:
 					LaunchTeleportProjectiles();
 					MoveProjectiles();
-					return;
+					break;
 				case ProjectileStatus.LaunchFinished:
 					MoveProjectiles();
-					return;
+					break;
 				default:
-					return;
+					break;
+			}
+
+			if (splashStatus.Count > 0)
+			{
+				ChangeSplashSprite();
 			}
 		}
 
@@ -614,7 +627,7 @@ namespace PipeCircles
 
 						if (percentComplete >= 1f)
 						{				
-							//Instantiate(splashPrefab, BoardPosToWorldPos(endingBoardPos[i]), Quaternion.identity);
+							CreateSplashAnim(endingBoardPos[i]);
 							Destroy(projectiles[i][j].gameObject);
 							projectiles[i][j] = null;
 							projectileCompleted[i][j] = true;
@@ -641,6 +654,58 @@ namespace PipeCircles
 				projectileStatus = ProjectileStatus.NotStarted;
 			}
 		}
+
+		private void CreateSplashAnim(Vector2Int endingPosition)
+		{
+			if (endingPosition == null) { return; }
+
+			Vector3 endingPos = BoardPosToWorldPos(endingPosition);
+			GameObject splashHolder = new GameObject();
+			splashHolder.name = "Splash Object";
+			splashHolder.transform.position = endingPos;
+			
+			float randRotation = UnityEngine.Random.Range(0f, 360f);
+			splashHolder.transform.rotation = Quaternion.Euler(Vector3.forward * randRotation);
+
+			SpriteRenderer renderer = splashHolder.AddComponent<SpriteRenderer>();
+			renderer.sortingLayerName = "VFX";
+
+			if (splashSprites.Length > 0)
+			{
+				int maxIndex = UnityEngine.Random.Range(0, splashSprites.Length);
+				splashStatus.Add(new SplashStatus(splashHolder, Time.time, maxIndex));
+			}
+
+			Destroy(splashHolder, 1f);
+		}
+
+		private void ChangeSplashSprite()
+		{
+			for (int i = splashStatus.Count - 1; i >= 0; i--) //Going backwards because of list removal
+			{
+				if (splashStatus[i].spriteContainer == null) { continue; }
+				GameObject splashHolder = splashStatus[i].spriteContainer;
+				if (splashHolder == null) { continue; }			
+				SpriteRenderer renderer = splashHolder.GetComponent<SpriteRenderer>();
+				if (renderer == null) { continue; }
+
+				float timeElapsed = Time.time - splashStatus[i].createTime;
+				int spriteIndex = (int)(timeElapsed / SPLASH_FRAMES_PER_SECOND);
+
+				if (spriteIndex > splashStatus[i].maxFrames)
+				{
+					splashStatus.RemoveAt(i);
+					Destroy(splashHolder);
+					continue;
+				}
+
+				if (spriteIndex < splashSprites.Length)
+				{
+					renderer.sprite = splashSprites[spriteIndex];
+				}
+			}
+		}
+
 		#endregion Projectiles
 
 		#region AnimationComplete
@@ -822,6 +887,20 @@ namespace PipeCircles
 			columnIndex = col;
 			rowIndex = row;
 			direction = dir;
+		}
+	}
+
+	struct SplashStatus
+	{
+		public GameObject spriteContainer;
+		public float createTime;
+		public int maxFrames;
+		
+		public SplashStatus (GameObject spriteContain, float creationTime, int maxFrame)
+		{
+			spriteContainer = spriteContain;
+			createTime = creationTime;
+			maxFrames = maxFrame;
 		}
 	}
 	#endregion Structs

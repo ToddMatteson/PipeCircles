@@ -1587,7 +1587,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &166736920
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3219,7 +3219,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 394511359}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1553, y: 1036.3, z: 472.71002}
+  m_LocalPosition: {x: 1553, y: 1036.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 22354247}
@@ -3842,7 +3842,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 982117951
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 70ec9888f9844c94ab5349ac813863c1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -10212,6 +10212,19 @@ MonoBehaviour:
   dropletsPerStream: 30
   projectileParent: {fileID: 759469810}
   streamJittering: 1
+  splashSprites:
+  - {fileID: 21300000, guid: ddf06c451bc082841a6af7397610608e, type: 3}
+  - {fileID: 21300000, guid: 9c3cd3533ba8f03438f7ce4bd1f58368, type: 3}
+  - {fileID: 21300000, guid: b4346e9bbf8b559418e12d25c6ad72d6, type: 3}
+  - {fileID: 21300000, guid: 5dc31cdeabea4bb41b89e662fad9a756, type: 3}
+  - {fileID: 21300000, guid: 948439b2a61a63344b52a56229bb00ea, type: 3}
+  - {fileID: 21300000, guid: 42a6c839b8500b44eb9def0ff6a007d1, type: 3}
+  - {fileID: 21300000, guid: dddb49fd6a53bfc459d4c56eea85953b, type: 3}
+  - {fileID: 21300000, guid: c513e8d34386a6d43a7f2eef418226d5, type: 3}
+  - {fileID: 21300000, guid: 4c20f38833a35074d8218ef269658758, type: 3}
+  - {fileID: 21300000, guid: eefc03c66cb8dfa4ea596a40a392f7e5, type: 3}
+  - {fileID: 21300000, guid: e9dabe71eb5361742a95fd152b8c7b2f, type: 3}
+  - {fileID: 21300000, guid: 51169ac31530cad4e888f14654caab0f, type: 3}
 --- !u!1 &1439490901
 GameObject:
   m_ObjectHideFlags: 0
@@ -11139,7 +11152,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1575934841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11934,7 +11947,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 982117951
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 70ec9888f9844c94ab5349ac813863c1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

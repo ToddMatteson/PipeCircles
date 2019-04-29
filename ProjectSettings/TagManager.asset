@@ -20,7 +20,7 @@ TagManager:
   - 
   - 
   - GamePieces
-  - MyUnused
+  - 
   - 
   - 
   - 
@@ -55,6 +55,9 @@ TagManager:
     locked: 0
   - name: GamePieces
     uniqueID: 1858055451
+    locked: 0
+  - name: VFX
+    uniqueID: 2939359259
     locked: 0
   - name: PopUpMenus
     uniqueID: 982117951
