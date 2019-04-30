@@ -10205,7 +10205,7 @@ MonoBehaviour:
   matchingTeleportPos:
   - {x: 11, y: 8}
   - {x: 0, y: 8}
-  launchInterval: 5
+  launchInterval: 6
   projectilePrefab: {fileID: 4700771646406293839, guid: 9d24c04af3f03fa41accc13324ec1d4f,
     type: 3}
   dropletsPerSecond: 100
@@ -14531,7 +14531,7 @@ PrefabInstance:
     - target: {fileID: 3818373074455677891, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}
       propertyPath: startingTime
-      value: 300
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3818373074455677949, guid: 10c9443e9659b764b9bee9f828aef994,
         type: 3}

@@ -29,7 +29,6 @@ namespace PipeCircles
 		[Header("Teleporter Fountains")]
 		[SerializeField] [Tooltip("Set interval to 0 to turn off")] [Range(0f, 60f)] float launchInterval = 0;
 		[SerializeField] Transform projectilePrefab = null;
-		//[SerializeField] Transform splashPrefab = null;
 		[SerializeField] [Range(0, 1000f)] float dropletsPerSecond = 100f;
 		[SerializeField] [Range(0, 1000)] int dropletsPerStream = 30;
 		[SerializeField] Transform projectileParent = null;
@@ -672,7 +671,7 @@ namespace PipeCircles
 
 			if (splashSprites.Length > 0)
 			{
-				int maxIndex = UnityEngine.Random.Range(0, splashSprites.Length);
+				int maxIndex = UnityEngine.Random.Range(1, splashSprites.Length);
 				splashStatus.Add(new SplashStatus(splashHolder, Time.time, maxIndex));
 			}
 
@@ -690,8 +689,7 @@ namespace PipeCircles
 				if (renderer == null) { continue; }
 
 				float timeElapsed = Time.time - splashStatus[i].createTime;
-				int spriteIndex = (int)(timeElapsed / SPLASH_FRAMES_PER_SECOND);
-
+				int spriteIndex = (int)(timeElapsed * SPLASH_FRAMES_PER_SECOND);
 				if (spriteIndex > splashStatus[i].maxFrames)
 				{
 					splashStatus.RemoveAt(i);
