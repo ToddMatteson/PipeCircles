@@ -21,11 +21,19 @@ namespace PipeCircles
 		[SerializeField] Direction bottomLeads = Direction.Nowhere;
 		[SerializeField] Direction leftLeads = Direction.Nowhere;
 
-		[Header("Secondary Path")]
+		[Header("Splitter Secondary Path")]
 		[SerializeField] Direction secondTopLeads = Direction.Nowhere;
 		[SerializeField] Direction secondRightLeads = Direction.Nowhere;
 		[SerializeField] Direction secondBottomLeads = Direction.Nowhere;
 		[SerializeField] Direction secondLeftLeads = Direction.Nowhere;
+
+		[Header("Water Park")]
+		[SerializeField] Direction firstEntrance = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkEntrance1Slot;
+		[SerializeField] Direction secondEntrance = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkEntrance2Slot;
+		[SerializeField] Direction exitDirection = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkExitSlot;
 
 		Board board;
 		Scoring scoring;

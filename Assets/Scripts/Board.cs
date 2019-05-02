@@ -37,6 +37,9 @@ namespace PipeCircles
 		[Header("Splashes")]
 		[SerializeField] Sprite[] splashSprites = null;
 
+		[Header("Water Parks")]
+		[SerializeField] [Tooltip("Center square location")] Vector2Int[] waterParkPos = null;
+
 		Transform[,] board = new Transform[BOARD_UNITS_WIDE, BOARD_UNITS_HIGH];
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
@@ -49,7 +52,7 @@ namespace PipeCircles
 		int numSplits = 0;
 		Timer timer;
 
-		//Teleporter projectile stuff
+		//Teleporter projectile and splash stuff
 		Trajectory trajectory;
 		List<Vector2Int> startingBoardPos = new List<Vector2Int>();
 		List<Vector2Int> endingBoardPos = new List<Vector2Int>();
@@ -60,9 +63,10 @@ namespace PipeCircles
 		List<Vector3[]> jitterVector = new List<Vector3[]>();
 		ProjectileStatus projectileStatus = ProjectileStatus.NotStarted;
 		float waitingPeriodStart = 0;
-
-		//Splash stuff
 		List<SplashStatus> splashStatus = new List<SplashStatus>();
+
+		//Water Park stuff
+		Dictionary<Vector2Int, int> parkStreamsConnected = new Dictionary<Vector2Int, int>();
 
 		#endregion VariableDeclaration
 
@@ -98,6 +102,7 @@ namespace PipeCircles
 			ClearColumnTraversed();
 			AddPreplacedPiecesToBoard();
 			AddTeleporters();
+			AddWaterParks();
 		}
 		
 		private void Update()
@@ -180,12 +185,6 @@ namespace PipeCircles
 				return;
 			}
 
-			//if (teleportPos.Length != launchSpeed.Length)
-			//{
-			//	Debug.LogError("teleportPos is not the same length as launchSpeed");
-			//	return;
-			//}
-
 			if (teleportPos.Length == 1)
 			{
 				Debug.LogError("Please add the other teleporter as well");
@@ -213,6 +212,18 @@ namespace PipeCircles
 			}
 		}
 		#endregion TeleporterSetUp
+
+		#region WaterParkSetUp
+		private void AddWaterParks()
+		{
+			parkStreamsConnected.Clear();
+			for (int i = 0; i < waterParkPos.Length; i++)
+			{
+				parkStreamsConnected.Add(waterParkPos[i], 0);
+			}
+		}
+		
+		#endregion WaterParkSetUp
 
 		#region AddPieceToBoard
 		public void AddPieceToBoardInWorldUnits(Transform transformToAdd) 
@@ -299,10 +310,20 @@ namespace PipeCircles
 
 				Vector2Int potentialBoardPos = GetNewBoardPos(path, firstExitDirection, currentColumn, oldColumn);
 				if (!CheckValidBoardPos(potentialBoardPos)) { return; } //Piece on edge of board => no more path
-				if (board[potentialBoardPos.x, potentialBoardPos.y] == null) { return; } //No piece placed yet => no more path
 
 				Direction entranceDirection = ReverseDirection(firstExitDirection);
-				if (!board[potentialBoardPos.x, potentialBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
+				if (isWithinWaterPark(potentialBoardPos))
+				{
+					if (!DoesParkAcceptWaterThere(potentialBoardPos, entranceDirection)) { return; }
+					//If the park is not full with number of entrance streams, no more path
+					//Acceptable piece if here
+					//Change the potentialBoardPos to the center position
+				} else
+				{ //Not a water park
+					if (board[potentialBoardPos.x, potentialBoardPos.y] == null) { return; } //No piece placed yet => no more path
+
+					if (!board[potentialBoardPos.x, potentialBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
+				}
 
 				//Now have a valid piece, can add it to the path list
 				Vector2Int newBoardPos = potentialBoardPos;
@@ -434,6 +455,98 @@ namespace PipeCircles
 				default:
 					return Direction.Nowhere;
 			}
+		}
+
+		private bool isWithinWaterPark(Vector2Int potentialBoardPos)
+		{
+			//oo1		o1o
+			//oxo	or	oxo
+			//ooo		ooo
+
+			for (int i = 0; i < waterParkPos.Length; i++)
+			{
+				if(Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1 
+					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private bool DoesParkAcceptWaterThere(Vector2Int potentialBoardPos, Direction entranceDirection)
+		{
+			int parkIndex = -1;
+			for (int i = 0; i < waterParkPos.Length; i++)
+			{
+				if (Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1
+					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
+				{
+					parkIndex = i;
+				}
+			}
+
+			if(parkIndex == -1) { return false; } //Something went wrong if this happens
+
+			int entranceSlot = 0;
+
+			if (potentialBoardPos.x == waterParkPos[parkIndex].x
+				|| potentialBoardPos.y == waterParkPos[parkIndex].y)
+			{ // Middle slot
+				entranceSlot = 2;
+			} else //Corner slot, each corner could be either slot 1 or 3, depending on the entrance direction
+			{
+				if (potentialBoardPos.x < waterParkPos[parkIndex].x && potentialBoardPos.y < waterParkPos[parkIndex].y)
+				{ //Lower left corner
+					if (entranceDirection == Direction.Bottom)
+					{
+						entranceSlot = 3;
+					} else
+					{
+						entranceSlot = 1;
+					}
+				}
+				if (potentialBoardPos.x < waterParkPos[parkIndex].x && potentialBoardPos.y > waterParkPos[parkIndex].y)
+				{ //Upper left corner
+					if (entranceDirection == Direction.Top)
+					{
+						entranceSlot = 1;
+					} else
+					{
+						entranceSlot = 3;
+					}
+				}
+				if (potentialBoardPos.x > waterParkPos[parkIndex].x && potentialBoardPos.y < waterParkPos[parkIndex].y)
+				{ //Lower right corner
+					if (entranceDirection == Direction.Bottom)
+					{
+						entranceSlot = 1;
+					} else
+					{
+						entranceSlot = 3;
+					}
+				}
+				if (potentialBoardPos.x > waterParkPos[parkIndex].x && potentialBoardPos.y > waterParkPos[parkIndex].y)
+				{ //Upper right corner
+					if (entranceDirection == Direction.Top)
+					{
+						entranceSlot = 3;
+					} else
+					{
+						entranceSlot = 1;
+					}
+				}
+			}
+
+			if (entranceSlot == 0) { return false; } //Something went wrong if this happens
+
+			
+			//Use park boardPos to get the associated piece
+			//Use the piece to ask if it accepts water there
+			//return the result
+
+			return false; //TODO temp
 		}
 
 		private void UpdateAnimDictionaries()
