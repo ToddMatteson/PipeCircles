@@ -66,7 +66,7 @@ namespace PipeCircles
 		List<SplashStatus> splashStatus = new List<SplashStatus>();
 
 		//Water Park stuff
-		Dictionary<Vector2Int, int> parkStreamsConnected = new Dictionary<Vector2Int, int>();
+		Dictionary<Vector2Int, int> parkInPathsConnected = new Dictionary<Vector2Int, int>();
 
 		#endregion VariableDeclaration
 
@@ -216,10 +216,10 @@ namespace PipeCircles
 		#region WaterParkSetUp
 		private void AddWaterParks()
 		{
-			parkStreamsConnected.Clear();
+			parkInPathsConnected.Clear();
 			for (int i = 0; i < waterParkPos.Length; i++)
 			{
-				parkStreamsConnected.Add(waterParkPos[i], 0);
+				parkInPathsConnected.Add(waterParkPos[i], 0);
 			}
 		}
 		
@@ -266,6 +266,7 @@ namespace PipeCircles
 			numSplits = 0;
 			List<List<PathTransformDirection>> path = new List<List<PathTransformDirection>>();
 			splitterCameFromPathIndexes.Clear();
+			parkInPathsConnected.Clear();
 
 			if (board[preplacedPositions[0].x, preplacedPositions[0].y] == null) { return path; } //No starting piece => no path
 			path.Add(new List<PathTransformDirection>());
@@ -312,16 +313,18 @@ namespace PipeCircles
 				if (!CheckValidBoardPos(potentialBoardPos)) { return; } //Piece on edge of board => no more path
 
 				Direction entranceDirection = ReverseDirection(firstExitDirection);
-				if (isWithinWaterPark(potentialBoardPos))
-				{
+				if (IsWithinWaterPark(potentialBoardPos))
+				{ //Water park
 					if (!DoesParkAcceptWaterThere(potentialBoardPos, entranceDirection)) { return; }
-					//If the park is not full with number of entrance streams, no more path
-					//Acceptable piece if here
-					//Change the potentialBoardPos to the center position
+					int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
+					potentialBoardPos = waterParkPos[parkIndex]; //Changing the location to the park since the park is on the board
+					parkInPathsConnected[potentialBoardPos] = parkInPathsConnected[potentialBoardPos] + 1;
+
+					//Don't let path continue until both streams appear at the park
+					if (parkInPathsConnected[waterParkPos[parkIndex]] == 1) { return; }
 				} else
 				{ //Not a water park
 					if (board[potentialBoardPos.x, potentialBoardPos.y] == null) { return; } //No piece placed yet => no more path
-
 					if (!board[potentialBoardPos.x, potentialBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
 				}
 
@@ -367,13 +370,14 @@ namespace PipeCircles
 
 		private Vector2Int GetNewBoardPos(List<List<PathTransformDirection>> path, Direction firstExitDirection, int currentColumn, int oldColumn)
 		{
+			#region TeleporterExplanationComments
 			/*/////
 			This algorithm will fail if two teleporters are placed adjacent to each other
 			Don't do this!
 			It would be silly anyway!
 			*//////
 
-			//There are 3 distinct cases:
+			//There are 3 distinct teleporter related cases:
 			//1. The current piece is nowhere near a teleport or is the one before a teleport
 			//		Normal operation - new piece is the adjacent piece, doesn't get into special case
 			//2. The current piece is the entrance teleport
@@ -384,6 +388,7 @@ namespace PipeCircles
 			//		Special operation - new piece is the adjacent piece, but does need to get into and out of
 			//			the special case, since it would also pass the teleportDict.ContainsKey check.
 			//			Previous piece and current piece != adjacent
+			#endregion TeleporterExplanationComments
 
 			int currentColumnPathIndex;
 			int currentRowPathIndex;
@@ -398,15 +403,17 @@ namespace PipeCircles
 				currentRowPathIndex = path[oldColumn].Count - 1;
 			}
 
+			//Find standard next position
 			Transform currentTransform = path[currentColumnPathIndex][currentRowPathIndex].pathTransform;
 			int currentBoardPosX = CalcBoardPos(currentTransform).x;
 			int currentBoardPosY = CalcBoardPos(currentTransform).y;
 			int returnXValue = currentBoardPosX + dirToVector2[firstExitDirection].x;
 			int returnYValue = currentBoardPosY + dirToVector2[firstExitDirection].y;
+			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			Vector2Int returnValue = new Vector2Int(returnXValue, returnYValue);
 
-			//Teleporter special handling
-			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
+			#region TeleporterSpecialCase
+			//Teleporter special handling of next position
 			if (teleportDict.ContainsKey(currentBoardPos))
 			{
 				//Can assume a previous piece exists since teleporters can't be a starting piece
@@ -423,6 +430,71 @@ namespace PipeCircles
 					return new Vector2Int(teleportDict[currentBoardPos].x, teleportDict[currentBoardPos].y);
 				}
 			}
+			#endregion TeleporterSpecialCase
+
+			#region WaterParkSpecialCase
+			//Water Park special handling of next position
+			if(IsWithinWaterPark(currentBoardPos))
+			{
+				//oooN	Needs to go from x to N when the ReturnValue would place it at P
+				//oxP	So, add another in the direction of the firstExitDirection,
+				//ooo	Then, adjust the orthogonal direction by 1 if exit slot is 1 or 3, none if 2
+
+				int parkIndex = FindWaterParkPosIndex(currentBoardPos);
+				Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
+				Piece parkPiece = parkTransform.GetComponent<Piece>();
+				Direction parkExitDir = parkPiece.GetParkExit();
+				int parkExitSlot = parkPiece.GetParkExitSlot();
+				int parkXValue = returnXValue + dirToVector2[firstExitDirection].x;
+				int parkYValue = returnYValue + dirToVector2[firstExitDirection].y;
+
+				if (parkExitSlot == 2)
+				{
+					return new Vector2Int(parkXValue, parkYValue);
+				}
+
+				if(parkExitSlot == 1)
+				{
+					switch (firstExitDirection)
+					{
+						case Direction.Right:
+							parkYValue++;
+							break;
+						case Direction.Left:
+							parkYValue--;
+							break;
+						case Direction.Top:
+							parkXValue--;
+							break;
+						case Direction.Bottom:
+							parkXValue++;
+							break;
+						default:
+							break;
+					}
+				} else
+				{
+					switch (firstExitDirection)
+					{
+						case Direction.Right:
+							parkYValue--;
+							break;
+						case Direction.Left:
+							parkYValue++;
+							break;
+						case Direction.Top:
+							parkXValue++;
+							break;
+						case Direction.Bottom:
+							parkXValue--;
+							break;
+						default:
+							break;
+					}
+				}
+				return new Vector2Int(parkXValue, parkYValue);
+			}
+			#endregion WaterParkSpecialCase
 
 			return returnValue;
 		}
@@ -457,7 +529,7 @@ namespace PipeCircles
 			}
 		}
 
-		private bool isWithinWaterPark(Vector2Int potentialBoardPos)
+		private bool IsWithinWaterPark(Vector2Int potentialBoardPos)
 		{
 			//oo1		o1o
 			//oxo	or	oxo
@@ -477,17 +549,8 @@ namespace PipeCircles
 
 		private bool DoesParkAcceptWaterThere(Vector2Int potentialBoardPos, Direction entranceDirection)
 		{
-			int parkIndex = -1;
-			for (int i = 0; i < waterParkPos.Length; i++)
-			{
-				if (Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1
-					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
-				{
-					parkIndex = i;
-				}
-			}
-
-			if(parkIndex == -1) { return false; } //Something went wrong if this happens
+			int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
+			if (parkIndex == -1) { return false; } //Something went wrong if this happens
 
 			int entranceSlot = 0;
 
@@ -541,12 +604,45 @@ namespace PipeCircles
 
 			if (entranceSlot == 0) { return false; } //Something went wrong if this happens
 
-			
-			//Use park boardPos to get the associated piece
-			//Use the piece to ask if it accepts water there
-			//return the result
+			Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
+			Piece parkPiece = parkTransform.GetComponent<Piece>();
 
-			return false; //TODO temp
+			if (parkPiece.GetPark1stEntrance() == Direction.Nowhere || parkPiece.GetPark2ndEntrance() == Direction.Nowhere)
+			{
+				return false;
+			}
+			
+			if(parkPiece.GetPark1stEntrance() == entranceDirection)
+			{
+				if (entranceSlot == parkPiece.GetParkEntrance1Slot())
+				{
+					return true;
+				}
+			}
+
+			if(parkPiece.GetPark2ndEntrance() == entranceDirection)
+			{
+				if (entranceSlot == parkPiece.GetParkEntrance2Slot())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private int FindWaterParkPosIndex(Vector2Int potentialBoardPos)
+		{
+			int parkIndex = -1;
+			for (int i = 0; i < waterParkPos.Length; i++)
+			{
+				if (Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1
+					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
+				{
+					parkIndex = i;
+				}
+			}
+			return parkIndex;
 		}
 
 		private void UpdateAnimDictionaries()

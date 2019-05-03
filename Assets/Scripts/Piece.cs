@@ -28,12 +28,12 @@ namespace PipeCircles
 		[SerializeField] Direction secondLeftLeads = Direction.Nowhere;
 
 		[Header("Water Park")]
-		[SerializeField] Direction firstEntrance = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkEntrance1Slot;
-		[SerializeField] Direction secondEntrance = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkEntrance2Slot;
-		[SerializeField] Direction exitDirection = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkExitSlot;
+		[SerializeField] Direction park1stEntrance = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkEntrance1Slot = 0;
+		[SerializeField] Direction park2ndEntrance = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkEntrance2Slot = 0;
+		[SerializeField] Direction parkExit = Direction.Nowhere;
+		[SerializeField] [Range(1, 3)] int parkExitSlot = 0;
 
 		Board board;
 		Scoring scoring;
@@ -110,7 +110,7 @@ namespace PipeCircles
 		{
 			scoring.EndReached();
 		}
-		
+
 		public void AnimationComplete(string startingDirection) //Called by animations
 		{
 			Direction startDirection = GetStartingDirection(startingDirection);
@@ -136,6 +136,36 @@ namespace PipeCircles
 					Debug.LogError("GetStartingDirection had to use the default.");
 					return Direction.Nowhere;
 			}
+		}
+
+		public Direction GetPark1stEntrance()
+		{
+			return park1stEntrance;
+		}
+
+		public Direction GetPark2ndEntrance()
+		{
+			return park2ndEntrance;
+		}
+
+		public int GetParkEntrance1Slot()
+		{
+			return parkEntrance1Slot;
+		}
+
+		public int GetParkEntrance2Slot()
+		{
+			return parkEntrance2Slot;
+		}
+
+		public Direction GetParkExit()
+		{
+			return parkExit;
+		}
+
+		public int GetParkExitSlot()
+		{
+			return parkExitSlot;
 		}
 	}
 
