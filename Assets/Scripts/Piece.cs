@@ -29,9 +29,7 @@ namespace PipeCircles
 
 		[Header("Water Park")]
 		[SerializeField] Direction park1stEntrance = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkEntrance1Slot = 0;
 		[SerializeField] Direction park2ndEntrance = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkEntrance2Slot = 0;
 		[SerializeField] Direction parkExit = Direction.Nowhere;
 		[SerializeField] [Range(1, 3)] int parkExitSlot = 0;
 
@@ -150,12 +148,14 @@ namespace PipeCircles
 
 		public int GetParkEntrance1Slot()
 		{
-			return parkEntrance1Slot;
+			//return parkEntrance1Slot;
+			return 2;
 		}
 
 		public int GetParkEntrance2Slot()
 		{
-			return parkEntrance2Slot;
+			//return parkEntrance2Slot;
+			return 2;
 		}
 
 		public Direction GetParkExit()

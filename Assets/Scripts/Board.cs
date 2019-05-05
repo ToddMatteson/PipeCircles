@@ -556,15 +556,11 @@ namespace PipeCircles
 		private bool DoesParkAcceptWaterThere(Vector2Int potentialBoardPos, Direction entranceDirection)
 		{
 			int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
-			if (parkIndex == -1)
-			{ return false; } //Something went wrong if this happens
+			if (parkIndex == -1) { return false; } //Something went wrong if this happens
 
 			int entranceSlot = 0;
-
 			entranceSlot = FindParkSlot(potentialBoardPos, parkIndex, entranceDirection);
-
-			if (entranceSlot == 0)
-			{ return false; } //Something went wrong if this happens
+			if (entranceSlot == 0) { return false; } //Something went wrong if this happens
 
 			Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
 			Piece parkPiece = parkTransform.GetComponent<Piece>();
@@ -755,6 +751,12 @@ namespace PipeCircles
 			}
 			return parkTimesTraversed[boardPos] <= 2;
 		}
+
+		//Assuming 1 slot available for each input and 3 for the output
+		//4 different positions for the 1st input
+		//3 different positions for the 2nd input
+		//6 different positions for the output
+		//Yields 72 different combinations
 
 		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool teleporterIn, 
 			bool waterPark, int waterParkSlot, bool waterParkIn)
@@ -993,11 +995,12 @@ namespace PipeCircles
 			Piece activePiece = activeTransform.GetComponent<Piece>();
 			Direction secondExitDirection = activePiece.SecondExitDirection();
 			bool isSplitter = secondExitDirection != Direction.Nowhere;
+			bool isWaterPark = IsWithinWaterPark(activeTransform);
 
 			bool primaryElementMissing = false; 
 			bool secondaryElementMissing = false;
 
-			if (!isSplitter)
+			if (!isSplitter && !isWaterPark)
 			{
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
 				{
@@ -1014,7 +1017,7 @@ namespace PipeCircles
 						columnTraversed[activeColumn] = true;
 					}
 				}
-			} else
+			} else if (isSplitter)
 			{
 				//Primary path
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next primary element
@@ -1062,6 +1065,39 @@ namespace PipeCircles
 					if (!deadEndStopsLevel) //Checking here to avoid calling LevelOver twice
 					{
 						columnTraversed[activeColumn] = true;
+					}
+				}
+			} else
+			{ //Water Park
+				Vector2Int boardPos = CalcBoardPos(activeTransform);
+				int timesTraversed = parkTimesTraversed[boardPos];
+
+				if (timesTraversed == 1)
+				{
+					columnTraversed[activeColumn] = true;
+				}
+				
+				if (timesTraversed == 2)
+				{
+					StartCoreAnimation(activeTransform, activeColumn, activeRow);
+				}
+
+				if (timesTraversed == 3)
+				{ //Output stream
+					if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
+					{
+						Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
+						StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
+					} else
+					{
+						if (deadEndStopsLevel)
+						{
+							LevelOver();
+							return;
+						} else
+						{
+							columnTraversed[activeColumn] = true;
+						}
 					}
 				}
 			}
@@ -1183,5 +1219,4 @@ namespace PipeCircles
 
 	public enum ProjectileStatus { NotStarted, LaunchStarted, LaunchFinished }
 	#endregion Enums
-
 }
