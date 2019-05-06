@@ -437,62 +437,16 @@ namespace PipeCircles
 			//Water Park special handling of next position
 			if(IsWithinWaterPark(currentBoardPos))
 			{
-				//oooN	Needs to go from x to N when the ReturnValue would place it at P
-				//oxP	So, add another in the direction of the firstExitDirection,
-				//ooo	Then, adjust the orthogonal direction by 1 if exit slot is 1 or 3, none if 2
+				//ooo	Needs to go from x to N when the ReturnValue would place it at P
+				//oxPN	So, add another in the direction of the firstExitDirection,
+				//ooo
 
 				int parkIndex = FindWaterParkPosIndex(currentBoardPos);
 				Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
 				Piece parkPiece = parkTransform.GetComponent<Piece>();
 				Direction parkExitDir = parkPiece.GetParkExit();
-				int parkExitSlot = parkPiece.GetParkExitSlot();
 				int parkXValue = returnXValue + dirToVector2[firstExitDirection].x;
-				int parkYValue = returnYValue + dirToVector2[firstExitDirection].y;
-
-				if (parkExitSlot == 2)
-				{
-					return new Vector2Int(parkXValue, parkYValue);
-				}
-
-				if(parkExitSlot == 1)
-				{
-					switch (firstExitDirection)
-					{
-						case Direction.Right:
-							parkYValue++;
-							break;
-						case Direction.Left:
-							parkYValue--;
-							break;
-						case Direction.Top:
-							parkXValue--;
-							break;
-						case Direction.Bottom:
-							parkXValue++;
-							break;
-						default:
-							break;
-					}
-				} else
-				{
-					switch (firstExitDirection)
-					{
-						case Direction.Right:
-							parkYValue--;
-							break;
-						case Direction.Left:
-							parkYValue++;
-							break;
-						case Direction.Top:
-							parkXValue++;
-							break;
-						case Direction.Bottom:
-							parkXValue--;
-							break;
-						default:
-							break;
-					}
-				}
+				int parkYValue = returnYValue + dirToVector2[firstExitDirection].y;			
 				return new Vector2Int(parkXValue, parkYValue);
 			}
 			#endregion WaterParkSpecialCase
@@ -558,9 +512,8 @@ namespace PipeCircles
 			int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
 			if (parkIndex == -1) { return false; } //Something went wrong if this happens
 
-			int entranceSlot = 0;
-			entranceSlot = FindParkSlot(potentialBoardPos, parkIndex, entranceDirection);
-			if (entranceSlot == 0) { return false; } //Something went wrong if this happens
+			if (potentialBoardPos.x != waterParkPos[parkIndex].x && potentialBoardPos.y != waterParkPos[parkIndex].y) { return false; } 
+			//If get to here, in the middle position of one of the sides
 
 			Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
 			Piece parkPiece = parkTransform.GetComponent<Piece>();
@@ -570,75 +523,9 @@ namespace PipeCircles
 				return false;
 			}
 
-			if (parkPiece.GetPark1stEntrance() == entranceDirection)
-			{
-				if (entranceSlot == parkPiece.GetParkEntrance1Slot())
-				{
-					return true;
-				}
-			}
-
-			if (parkPiece.GetPark2ndEntrance() == entranceDirection)
-			{
-				if (entranceSlot == parkPiece.GetParkEntrance2Slot())
-				{
-					return true;
-				}
-			}
-
+			if (parkPiece.GetPark1stEntrance() == entranceDirection) { return true; }
+			if (parkPiece.GetPark2ndEntrance() == entranceDirection) { return true; }
 			return false;
-		}
-
-		private int FindParkSlot(Vector2Int potentialBoardPos, int parkIndex, Direction entranceDirection)
-		{
-			if (potentialBoardPos.x == waterParkPos[parkIndex].x
-							|| potentialBoardPos.y == waterParkPos[parkIndex].y)
-			{ // Middle slot
-				return 2;
-			} else //Corner slot, each corner could be either slot 1 or 3, depending on the entrance direction
-			{
-				if (potentialBoardPos.x < waterParkPos[parkIndex].x && potentialBoardPos.y < waterParkPos[parkIndex].y)
-				{ //Lower left corner
-					if (entranceDirection == Direction.Bottom)
-					{
-						return 3;
-					} else
-					{
-						return 1;
-					}
-				}
-				if (potentialBoardPos.x < waterParkPos[parkIndex].x && potentialBoardPos.y > waterParkPos[parkIndex].y)
-				{ //Upper left corner
-					if (entranceDirection == Direction.Top)
-					{
-						return 1;
-					} else
-					{
-						return 3;
-					}
-				}
-				if (potentialBoardPos.x > waterParkPos[parkIndex].x && potentialBoardPos.y < waterParkPos[parkIndex].y)
-				{ //Lower right corner
-					if (entranceDirection == Direction.Bottom)
-					{
-						return 1;
-					} else
-					{
-						return 3;
-					}
-				}
-				if (potentialBoardPos.x > waterParkPos[parkIndex].x && potentialBoardPos.y > waterParkPos[parkIndex].y)
-				{ //Upper right corner
-					if (entranceDirection == Direction.Top)
-					{
-						return 3;
-					} else
-					{
-						return 1;
-					}
-				}
-			}
-			return 0;
 		}
 
 		private int FindWaterParkPosIndex(Vector2Int potentialBoardPos)
@@ -692,9 +579,8 @@ namespace PipeCircles
 			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
 			bool teleporterIn = IsTeleporterIn(activePieceTransform, colIndex, rowIndex);
 			bool waterPark = IsWithinWaterPark(activePieceTransform);
-			int waterParkSlot = GetWaterParkSlot(activePieceTransform, startingDirection);
 			bool waterParkIn = TraversalCounter(activePieceTransform);
-			SetAnimatorEvents(animator, startingDirection, teleporterIn, waterPark, waterParkSlot, waterParkIn);
+			SetAnimatorEvents(animator, startingDirection, teleporterIn, waterPark, waterParkIn);
 			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 			animState[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = AnimStatus.Started;
@@ -731,14 +617,6 @@ namespace PipeCircles
 			return true;
 		}
 
-		private int GetWaterParkSlot(Transform activePieceTransform, Direction startingDirection)
-		{
-			if(!IsWithinWaterPark(activePieceTransform)) { return 0; }
-			Vector2Int boardPos = CalcBoardPos(activePieceTransform);
-			int parkIndex = FindWaterParkPosIndex(boardPos);
-			return FindParkSlot(boardPos, parkIndex, startingDirection);
-		}
-
 		private bool TraversalCounter(Transform activePieceTransform)
 		{
 			Vector2Int boardPos = CalcBoardPos(activePieceTransform);
@@ -752,56 +630,24 @@ namespace PipeCircles
 			return parkTimesTraversed[boardPos] <= 2;
 		}
 
-		//Assuming 1 slot available for each input and 3 for the output
-		//4 different positions for the 1st input
-		//3 different positions for the 2nd input
-		//6 different positions for the output
-		//Yields 72 different combinations
-
 		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool teleporterIn, 
-			bool waterPark, int waterParkSlot, bool waterParkIn)
+			bool waterPark, bool waterParkIn)
 		{
 			Direction exitingDirection = ReverseDirection(startingDirection);
+			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
+			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
+
 			if (teleporterIn)
 			{
-				animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
-				animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
 				animator.SetBool("In", true);
 			} else if (waterPark)
 			{
-				animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
-				animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
 				animator.SetBool("In", waterParkIn);
-
-				if (waterParkSlot == 1)
-				{
-					animator.SetBool("FirstSlot", true);
-				} else
-				{
-					animator.SetBool("FirstSlot", false);
-				}
-
-				if (waterParkSlot == 2)
-				{
-					animator.SetBool("SecondSlot", true);
-				} else
-				{
-					animator.SetBool("SecondSlot", false);
-				}
-
-				if (waterParkSlot == 3)
-				{
-					animator.SetBool("ThirdSlot", true);
-				} else
-				{
-					animator.SetBool("ThirdSlot", false);
-				}
 			} else
 			{//Standard
-				animator.SetBool("LeftOrRightStart", exitingDirection == Direction.Left || exitingDirection == Direction.Right);
-				animator.SetBool("LeftOrBottomStart", exitingDirection == Direction.Left || exitingDirection == Direction.Bottom);
 				animator.SetBool("In", false);
 			}
+
 			animator.SetTrigger("Transition");
 		}
 		#endregion Traversal

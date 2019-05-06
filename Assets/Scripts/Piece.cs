@@ -31,7 +31,6 @@ namespace PipeCircles
 		[SerializeField] Direction park1stEntrance = Direction.Nowhere;
 		[SerializeField] Direction park2ndEntrance = Direction.Nowhere;
 		[SerializeField] Direction parkExit = Direction.Nowhere;
-		[SerializeField] [Range(1, 3)] int parkExitSlot = 0;
 
 		Board board;
 		Scoring scoring;
@@ -146,27 +145,11 @@ namespace PipeCircles
 			return park2ndEntrance;
 		}
 
-		public int GetParkEntrance1Slot()
-		{
-			//return parkEntrance1Slot;
-			return 2;
-		}
-
-		public int GetParkEntrance2Slot()
-		{
-			//return parkEntrance2Slot;
-			return 2;
-		}
-
 		public Direction GetParkExit()
 		{
 			return parkExit;
 		}
 
-		public int GetParkExitSlot()
-		{
-			return parkExitSlot;
-		}
 	}
 
 	public enum Direction { Nowhere, Top, Right, Bottom, Left }
