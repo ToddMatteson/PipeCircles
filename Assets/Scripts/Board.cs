@@ -579,13 +579,15 @@ namespace PipeCircles
 			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
 			bool teleporterIn = IsTeleporterIn(activePieceTransform, colIndex, rowIndex);
 			bool waterPark = IsWithinWaterPark(activePieceTransform);
-			bool waterParkIn = TraversalCounter(activePieceTransform);
-			SetAnimatorEvents(animator, startingDirection, teleporterIn, waterPark, waterParkIn);
+			TraversalCounter(activePieceTransform, waterPark);
+			Direction waterParkExit = GetWaterParkExit(activePieceTransform, waterPark);
+			Direction waterPark2ndDir = Get2ndDir(activePieceTransform, waterPark, startingDirection);
+			SetAnimatorEvents(animator, startingDirection, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
 			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 			animState[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = AnimStatus.Started;
 		}
-
+		
 		private bool IsTeleporterIn(Transform activePieceTransform, int colIndex, int rowIndex)
 		{
 			/*/////
@@ -617,8 +619,10 @@ namespace PipeCircles
 			return true;
 		}
 
-		private bool TraversalCounter(Transform activePieceTransform)
+		private void TraversalCounter(Transform activePieceTransform, bool waterPark) //Needed later for AnimationComplete
 		{
+			if (!waterPark) { return; } //Don't want standard pieces clogging up parkTimesTraversed
+
 			Vector2Int boardPos = CalcBoardPos(activePieceTransform);
 			if (parkTimesTraversed.ContainsKey(boardPos))
 			{
@@ -627,11 +631,27 @@ namespace PipeCircles
 			{
 				parkTimesTraversed.Add(boardPos, 1);
 			}
-			return parkTimesTraversed[boardPos] <= 2;
+		}
+
+		private Direction GetWaterParkExit(Transform activePieceTransform, bool waterPark)
+		{
+			if (!waterPark)
+			{ return Direction.Nowhere; }
+			Piece activePiece = activePieceTransform.GetComponent<Piece>();
+			return activePiece.GetParkExit();
+		}
+
+		private Direction Get2ndDir(Transform activePieceTransform, bool waterPark, Direction startingDirection)
+		{
+			if (!waterPark) { return Direction.Nowhere; }
+			Piece activePiece = activePieceTransform.GetComponent<Piece>();
+			if (activePiece.GetPark1stEntrance() != startingDirection) { return activePiece.GetPark1stEntrance(); }
+			if (activePiece.GetPark2ndEntrance() != startingDirection) { return activePiece.GetPark2ndEntrance(); }
+			return Direction.Nowhere;
 		}
 
 		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool teleporterIn, 
-			bool waterPark, bool waterParkIn)
+			bool waterPark, Direction waterParkExit, Direction waterPark2ndDir)
 		{
 			Direction exitingDirection = ReverseDirection(startingDirection);
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
@@ -642,7 +662,10 @@ namespace PipeCircles
 				animator.SetBool("In", true);
 			} else if (waterPark)
 			{
-				animator.SetBool("In", waterParkIn);
+				animator.SetBool("LeftOrRightExit", waterParkExit == Direction.Left || waterParkExit == Direction.Right);
+				animator.SetBool("LeftOrBottomExit", waterParkExit == Direction.Left || waterParkExit == Direction.Bottom);
+				animator.SetBool("LeftOrRight2nd", waterPark2ndDir == Direction.Left || waterPark2ndDir == Direction.Right);
+				animator.SetBool("LeftOrBottom2nd", waterPark2ndDir == Direction.Left || waterPark2ndDir == Direction.Bottom);
 			} else
 			{//Standard
 				animator.SetBool("In", false);
