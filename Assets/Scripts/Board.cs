@@ -101,9 +101,9 @@ namespace PipeCircles
 			ClearBoard();
 			ClearAnimDict();
 			ClearColumnTraversed();
-			AddPreplacedPiecesToBoard();
 			AddTeleporters();
 			AddWaterParks();
+			AddPreplacedPiecesToBoard();
 		}
 		
 		private void Update()
@@ -177,6 +177,7 @@ namespace PipeCircles
 			bezier2WorldPos.Clear();
 			projectiles.Clear();
 			projectileCompleted.Clear();
+			jitterVector.Clear();
 			#endregion ClearProjectileListsRegion
 
 			#region ErrorCheckingRegion
@@ -195,6 +196,9 @@ namespace PipeCircles
 
 			if (teleportPos.Length != 0)
 			{
+				Debug.Log("teleportPos length is " + teleportPos.Length.ToString());
+				Debug.Log("matchingTeleportPos length is " + matchingTeleportPos.Length.ToString());
+
 				for (int i = 0; i < teleportPos.Length; i++)
 				{
 					if (teleportPos[i] == null || matchingTeleportPos[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
@@ -210,6 +214,12 @@ namespace PipeCircles
 						jitterVector.Add(new Vector3[dropletsPerStream]);
 					}
 				}
+
+				Debug.Log("Inside AddTeleporters, after for loop, teleportDict.Count is " + teleportDict.Count.ToString());
+				foreach (KeyValuePair<Vector2Int, Vector2Int> kvp in teleportDict)
+				{
+					Debug.Log("Inside AddTeleporters, key x is " + kvp.Key.x.ToString() + ", and key y is " + kvp.Key.y.ToString());
+				}
 			}
 		}
 		#endregion TeleporterSetUp
@@ -223,7 +233,6 @@ namespace PipeCircles
 				parkInPathsConnected.Add(waterParkPos[i], 0);
 			}
 		}
-		
 		#endregion WaterParkSetUp
 
 		#region AddPieceToBoard
@@ -413,6 +422,15 @@ namespace PipeCircles
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			Vector2Int returnValue = new Vector2Int(returnXValue, returnYValue);
 
+			Debug.Log("Got inside GetNewBoardPos and teleportDict.ContainsKey is " + teleportDict.ContainsKey(currentBoardPos).ToString());
+			Debug.Log("Inside GetNewBoardPos, Length of teleportDict is " + teleportDict.Count.ToString());
+			Debug.Log("Inside GetNewBoardPos, currentBoardPos is (" + currentBoardPos.x.ToString() + ", " + currentBoardPos.y.ToString() + ")");
+
+			foreach (KeyValuePair<Vector2Int, Vector2Int> kvp in teleportDict)
+			{
+				Debug.Log("Inside GetNewBoardPos, key x is " + kvp.Key.x.ToString() + ", and key y is " + kvp.Key.y.ToString());
+			}
+
 			#region TeleporterSpecialCase
 			//Teleporter special handling of next position
 			if (teleportDict.ContainsKey(currentBoardPos))
@@ -424,6 +442,9 @@ namespace PipeCircles
 				int previousBoardPosY = CalcBoardPos(previousTransform).y;
 				int xDiff = currentBoardPosX - previousBoardPosX;
 				int yDiff = currentBoardPosY - previousBoardPosY;
+
+				Debug.Log("xDiff: " + xDiff.ToString());
+				Debug.Log("yDiff: " + yDiff.ToString());
 
 				if (xDiff * yDiff == 0 && Mathf.Abs(xDiff + yDiff) == 1)
 				{   //Either x or y has to be unchanged to be adjacent, so the product must be 0 
@@ -855,6 +876,16 @@ namespace PipeCircles
 		#region AnimationComplete
 		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
 		{
+			Debug.Log("Primary path length: " + pathFromStart[0].Count.ToString());
+			if (pathFromStart.Count > 1)
+			{
+				Debug.Log("Secondary path length: " + pathFromStart[1].Count.ToString());
+				
+			}
+
+			Debug.Log("TeleportDict length: " + teleportDict.Count.ToString());
+
+
 			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
 			int activeColumn = completedIndexes.x;
 			int activeRow = completedIndexes.y;
