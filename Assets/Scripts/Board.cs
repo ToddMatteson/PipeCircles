@@ -44,8 +44,7 @@ namespace PipeCircles
 		Dictionary<Direction, Vector2Int> dirToVector2 = new Dictionary<Direction, Vector2Int>();
 		List<List<PathTransformDirection>> pathFromStart = new List<List<PathTransformDirection>>();
 		Dictionary<PathTransformDirection, AnimStatus> animState = new Dictionary<PathTransformDirection, AnimStatus>();
-		Dictionary<Vector2Int, Vector2Int> teleportDict = new Dictionary<Vector2Int, Vector2Int>(); //Board pos
-		Dictionary<Vector2Int, Vector2Int> splitterCameFromPathIndexes = new Dictionary<Vector2Int, Vector2Int>(); //working backwards to find starting path pos 
+		List<Vector4> splitterCameFromPathIndexes = new List<Vector4>(); //working backwards to find starting path pos 
 		List<bool> columnTraversed = new List<bool>();
 
 		bool waterFlowStarted = false;
@@ -66,9 +65,8 @@ namespace PipeCircles
 		List<SplashStatus> splashStatus = new List<SplashStatus>();
 
 		//Water Park stuff
-		Dictionary<Vector2Int, int> parkInPathsConnected = new Dictionary<Vector2Int, int>();
-		Dictionary<Vector2Int, int> parkTimesTraversed = new Dictionary<Vector2Int, int>();
-
+		List<Vector3Int> parkInPathsConnected = new List<Vector3Int>();
+		List<Vector3Int> parkTimesTraversed = new List<Vector3Int>();
 		#endregion VariableDeclaration
 
 		#region Awake
@@ -168,8 +166,6 @@ namespace PipeCircles
 		#region TeleporterSetUp
 		private void AddTeleporters()
 		{
-			teleportDict.Clear();
-
 			#region ClearProjectileListsRegion
 			startingBoardPos.Clear();
 			endingBoardPos.Clear();
@@ -196,13 +192,10 @@ namespace PipeCircles
 
 			if (teleportPos.Length != 0)
 			{
-				Debug.Log("teleportPos length is " + teleportPos.Length.ToString());
-				Debug.Log("matchingTeleportPos length is " + matchingTeleportPos.Length.ToString());
-
 				for (int i = 0; i < teleportPos.Length; i++)
 				{
 					if (teleportPos[i] == null || matchingTeleportPos[i] == null) { continue; } //In case a row gets skipped in the inspector, just move on to the next one
-					teleportDict.Add(teleportPos[i], matchingTeleportPos[i]);
+					//teleportDict.Add(teleportPos[i], matchingTeleportPos[i]);
 					if (launchInterval > 0.001f)
 					{
 						startingBoardPos.Add(teleportPos[i]);
@@ -214,12 +207,6 @@ namespace PipeCircles
 						jitterVector.Add(new Vector3[dropletsPerStream]);
 					}
 				}
-
-				Debug.Log("Inside AddTeleporters, after for loop, teleportDict.Count is " + teleportDict.Count.ToString());
-				foreach (KeyValuePair<Vector2Int, Vector2Int> kvp in teleportDict)
-				{
-					Debug.Log("Inside AddTeleporters, key x is " + kvp.Key.x.ToString() + ", and key y is " + kvp.Key.y.ToString());
-				}
 			}
 		}
 		#endregion TeleporterSetUp
@@ -230,7 +217,7 @@ namespace PipeCircles
 			parkInPathsConnected.Clear();
 			for (int i = 0; i < waterParkPos.Length; i++)
 			{
-				parkInPathsConnected.Add(waterParkPos[i], 0);
+				parkInPathsConnected.Add(new Vector3Int(waterParkPos[i].x, waterParkPos[i].y, 0));
 			}
 		}
 		#endregion WaterParkSetUp
@@ -327,11 +314,12 @@ namespace PipeCircles
 				{ //Water park
 					if (!DoesParkAcceptWaterThere(potentialBoardPos, entranceDirection)) { return; }
 					int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
+					//Debug.Log("ParkIndex: " + parkIndex.ToString());
 					potentialBoardPos = waterParkPos[parkIndex]; //Changing the location to the park since the park is on the board
-					parkInPathsConnected[potentialBoardPos] = parkInPathsConnected[potentialBoardPos] + 1;
+					IncrementWaterParkPathsIn(potentialBoardPos);
 
 					//Don't let path continue until both streams appear at the park
-					if (parkInPathsConnected[waterParkPos[parkIndex]] == 1) { return; }
+					if (parkInPathsConnected.Contains(new Vector3Int (potentialBoardPos.x, potentialBoardPos.y, 1))) { return; }
 				} else
 				{ //Not a water park
 					if (board[potentialBoardPos.x, potentialBoardPos.y] == null) { return; } //No piece placed yet => no more path
@@ -345,9 +333,9 @@ namespace PipeCircles
 				if(path[currentColumn].Count == 1) //Just added the piece after a splitter
 				{
 					Vector2Int currentPathIndexes = new Vector2Int(currentColumn, 0);
-					if (!splitterCameFromPathIndexes.ContainsKey(currentPathIndexes))
+					if (!splitterCameFromPathIndexes.Contains(new Vector4(currentColumn, 0, oldColumn, path[oldColumn].Count - 1)))
 					{
-						splitterCameFromPathIndexes.Add(currentPathIndexes, new Vector2Int(oldColumn, path[oldColumn].Count - 1));
+						splitterCameFromPathIndexes.Add(new Vector4(currentColumn, 0, oldColumn, path[oldColumn].Count - 1));
 					}
 				}
 
@@ -422,18 +410,12 @@ namespace PipeCircles
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			Vector2Int returnValue = new Vector2Int(returnXValue, returnYValue);
 
-			Debug.Log("Got inside GetNewBoardPos and teleportDict.ContainsKey is " + teleportDict.ContainsKey(currentBoardPos).ToString());
-			Debug.Log("Inside GetNewBoardPos, Length of teleportDict is " + teleportDict.Count.ToString());
 			Debug.Log("Inside GetNewBoardPos, currentBoardPos is (" + currentBoardPos.x.ToString() + ", " + currentBoardPos.y.ToString() + ")");
-
-			foreach (KeyValuePair<Vector2Int, Vector2Int> kvp in teleportDict)
-			{
-				Debug.Log("Inside GetNewBoardPos, key x is " + kvp.Key.x.ToString() + ", and key y is " + kvp.Key.y.ToString());
-			}
 
 			#region TeleporterSpecialCase
 			//Teleporter special handling of next position
-			if (teleportDict.ContainsKey(currentBoardPos))
+			int teleporterIndex = FindTeleporterIndex(currentBoardPos);
+			if (teleportPos.Length > 0 && teleporterIndex != teleportPos.Length)
 			{
 				//Can assume a previous piece exists since teleporters can't be a starting piece
 				Vector2Int previousPathIndexes = FindPreviousPiecePathIndexes(currentColumnPathIndex, currentRowPathIndex);
@@ -443,13 +425,10 @@ namespace PipeCircles
 				int xDiff = currentBoardPosX - previousBoardPosX;
 				int yDiff = currentBoardPosY - previousBoardPosY;
 
-				Debug.Log("xDiff: " + xDiff.ToString());
-				Debug.Log("yDiff: " + yDiff.ToString());
-
 				if (xDiff * yDiff == 0 && Mathf.Abs(xDiff + yDiff) == 1)
 				{   //Either x or y has to be unchanged to be adjacent, so the product must be 0 
 					//(1, 0) or (-1, 0) or (0, 1) or (0, -1)
-					return new Vector2Int(teleportDict[currentBoardPos].x, teleportDict[currentBoardPos].y);
+					return new Vector2Int(matchingTeleportPos[teleporterIndex].x, matchingTeleportPos[teleporterIndex].y);
 				}
 			}
 			#endregion TeleporterSpecialCase
@@ -459,20 +438,29 @@ namespace PipeCircles
 			if(IsWithinWaterPark(currentBoardPos))
 			{
 				//ooo	Needs to go from x to N when the ReturnValue would place it at P
-				//oxPN	So, add another in the direction of the firstExitDirection,
+				//oxPN	So, add another in the direction of the park exit,
 				//ooo
 
 				int parkIndex = FindWaterParkPosIndex(currentBoardPos);
 				Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
 				Piece parkPiece = parkTransform.GetComponent<Piece>();
 				Direction parkExitDir = parkPiece.GetParkExit();
-				int parkXValue = returnXValue + dirToVector2[firstExitDirection].x;
-				int parkYValue = returnYValue + dirToVector2[firstExitDirection].y;			
+				int parkXValue = returnXValue + dirToVector2[parkExitDir].x;
+				int parkYValue = returnYValue + dirToVector2[parkExitDir].y;			
 				return new Vector2Int(parkXValue, parkYValue);
 			}
 			#endregion WaterParkSpecialCase
 
 			return returnValue;
+		}
+
+		private int FindTeleporterIndex(Vector2Int currentBoardPos)
+		{
+			for (int i = 0; i < teleportPos.Length; i++)
+			{
+				if (teleportPos[i].x == currentBoardPos.x && teleportPos[i].y == currentBoardPos.y && matchingTeleportPos[i] != null) { return i; }
+			}
+			return teleportPos.Length;
 		}
 
 		private Vector2Int FindPreviousPiecePathIndexes(int colIndex, int rowIndex)
@@ -482,8 +470,33 @@ namespace PipeCircles
 				return new Vector2Int(colIndex, rowIndex - 1);
 			} else //Must be directly after a splitter
 			{
-				return splitterCameFromPathIndexes[new Vector2Int(colIndex, rowIndex)];
+				for (int i = 0; i < BOARD_UNITS_WIDE; i++)
+				{
+					for (int j = 0; j < BOARD_UNITS_HIGH; j++)
+					{
+						if (splitterCameFromPathIndexes.Contains(new Vector4(colIndex, rowIndex, i, j)))
+						{
+							return new Vector2Int(i, j);
+						}
+					}
+				}
 			}
+
+			return new Vector2Int(0, 0); //Shouldn't ever get here
+		}
+		
+		private int FindWaterParkPosIndex(Vector2Int potentialBoardPos)
+		{
+			int parkIndex = -1;
+			for (int i = 0; i < waterParkPos.Length; i++)
+			{
+				if (Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1
+					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
+				{
+					parkIndex = i;
+				}
+			}
+			return parkIndex;
 		}
 
 		private static Direction ReverseDirection(Direction directionToReverse)
@@ -549,18 +562,22 @@ namespace PipeCircles
 			return false;
 		}
 
-		private int FindWaterParkPosIndex(Vector2Int potentialBoardPos)
+		private void IncrementWaterParkPathsIn(Vector2Int potentialBoardPos)
 		{
-			int parkIndex = -1;
-			for (int i = 0; i < waterParkPos.Length; i++)
+			//parkInPathsConnected[potentialBoardPos] = parkInPathsConnected[potentialBoardPos] + 1;
+			//Replace (x, y, 1) with (x, y, 2)
+			if (parkInPathsConnected.Contains(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 1)))
 			{
-				if (Mathf.Abs(potentialBoardPos.x - waterParkPos[i].x) <= 1
-					&& Mathf.Abs(potentialBoardPos.y - waterParkPos[i].y) <= 1)
-				{
-					parkIndex = i;
-				}
+				parkInPathsConnected.Remove(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 1));
+				parkInPathsConnected.Add(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 2));
 			}
-			return parkIndex;
+			
+			//Replace (x, y, 0) with (x, y, 1)
+			if (parkInPathsConnected.Contains(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 0)))
+			{
+				parkInPathsConnected.Remove(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 0));
+				parkInPathsConnected.Add(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 1));
+			}
 		}
 
 		private void UpdateAnimDictionaries()
@@ -645,12 +662,17 @@ namespace PipeCircles
 			if (!waterPark) { return; } //Don't want standard pieces clogging up parkTimesTraversed
 
 			Vector2Int boardPos = CalcBoardPos(activePieceTransform);
-			if (parkTimesTraversed.ContainsKey(boardPos))
+			if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 2)))
 			{
-				parkTimesTraversed[boardPos] = parkTimesTraversed[boardPos] + 1;
+				parkTimesTraversed.Add(new Vector3Int(boardPos.x, boardPos.y, 3));
+				parkTimesTraversed.Remove(new Vector3Int(boardPos.x, boardPos.y, 2));
+			} else if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 1)))
+			{
+				parkTimesTraversed.Add(new Vector3Int(boardPos.x, boardPos.y, 2));
+				parkTimesTraversed.Remove(new Vector3Int(boardPos.x, boardPos.y, 1));
 			} else
 			{
-				parkTimesTraversed.Add(boardPos, 1);
+				parkTimesTraversed.Add(new Vector3Int(boardPos.x, boardPos.y, 1));
 			}
 		}
 
@@ -723,7 +745,7 @@ namespace PipeCircles
 
 		private void LaunchTeleportProjectiles()
 		{
-			if (teleportDict.Count < 2) { return; } //No teleporters => no fancy animation
+			if (teleportPos.Length < 2) { return; } //No teleporters => no fancy animation
 			if (launchInterval < 0.001f) { return; } //Easy way to disable
 
 			if (Time.time - waitingPeriodStart < launchInterval) { return; }
@@ -876,16 +898,6 @@ namespace PipeCircles
 		#region AnimationComplete
 		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
 		{
-			Debug.Log("Primary path length: " + pathFromStart[0].Count.ToString());
-			if (pathFromStart.Count > 1)
-			{
-				Debug.Log("Secondary path length: " + pathFromStart[1].Count.ToString());
-				
-			}
-
-			Debug.Log("TeleportDict length: " + teleportDict.Count.ToString());
-
-
 			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
 			int activeColumn = completedIndexes.x;
 			int activeRow = completedIndexes.y;
@@ -970,19 +982,18 @@ namespace PipeCircles
 			} else
 			{ //Water Park
 				Vector2Int boardPos = CalcBoardPos(activeTransform);
-				int timesTraversed = parkTimesTraversed[boardPos];
 
-				if (timesTraversed == 1)
+				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 1)))
 				{
 					columnTraversed[activeColumn] = true;
 				}
 				
-				if (timesTraversed == 2)
+				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 2)))
 				{
 					StartCoreAnimation(activeTransform, activeColumn, activeRow);
 				}
 
-				if (timesTraversed == 3)
+				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 3)))
 				{ //Output stream
 					if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
 					{
