@@ -111,6 +111,7 @@ namespace PipeCircles
 		public void AnimationComplete(string startingDirection) //Called by animations
 		{
 			Direction startDirection = GetStartingDirection(startingDirection);
+			//Debug.Log("Piece AnimationComplete called");
 			board.AnimationComplete(gameObject.transform, startDirection);
 		}
 

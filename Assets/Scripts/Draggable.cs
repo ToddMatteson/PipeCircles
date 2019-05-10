@@ -133,6 +133,8 @@ namespace PipeCircles
 			if (animator != null)
 			{
 				animator.SetTrigger("PlayVFX");
+
+				//TODO devise a way to move the piece layer up until the CreationVFX animation is done, then move back down
 			}
 		}
 	}

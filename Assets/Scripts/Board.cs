@@ -18,6 +18,7 @@ namespace PipeCircles
 		[Header("Preplaced Pieces")]
 		[SerializeField] [Tooltip("Actual object, not prefab")] Transform[] preplacedPieces = null;
 		[SerializeField] Vector2Int[] preplacedPositions = null;
+		[SerializeField] Transform preplacedPiecesHolder = null;
 
 		[Header("Level Over")]
 		[SerializeField] bool deadEndStopsLevel = false;
@@ -102,6 +103,7 @@ namespace PipeCircles
 			AddTeleporters();
 			AddWaterParks();
 			AddPreplacedPiecesToBoard();
+			PreplacedPieceExplosions();
 		}
 		
 		private void Update()
@@ -161,6 +163,17 @@ namespace PipeCircles
 				AddPieceToBoardInBoardUnits(preplacedPieces[i], preplacedPositions[i]);
 			}
 		}
+
+		private void PreplacedPieceExplosions()
+		{
+			for (int i = 0; i < preplacedPiecesHolder.childCount; i++)
+			{
+				Animator animator = preplacedPiecesHolder.GetChild(i).GetComponent<Animator>();
+				if (animator == null) { continue; }
+				animator.SetTrigger("PlayVFX");
+			}
+		}
+
 		#endregion BoardSetup
 
 		#region TeleporterSetUp
@@ -314,7 +327,6 @@ namespace PipeCircles
 				{ //Water park
 					if (!DoesParkAcceptWaterThere(potentialBoardPos, entranceDirection)) { return; }
 					int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
-					//Debug.Log("ParkIndex: " + parkIndex.ToString());
 					potentialBoardPos = waterParkPos[parkIndex]; //Changing the location to the park since the park is on the board
 					IncrementWaterParkPathsIn(potentialBoardPos);
 
@@ -410,7 +422,7 @@ namespace PipeCircles
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			Vector2Int returnValue = new Vector2Int(returnXValue, returnYValue);
 
-			Debug.Log("Inside GetNewBoardPos, currentBoardPos is (" + currentBoardPos.x.ToString() + ", " + currentBoardPos.y.ToString() + ")");
+			//Debug.Log("Inside GetNewBoardPos, currentBoardPos is (" + currentBoardPos.x.ToString() + ", " + currentBoardPos.y.ToString() + ")");
 
 			#region TeleporterSpecialCase
 			//Teleporter special handling of next position
@@ -613,14 +625,27 @@ namespace PipeCircles
 
 		private void StartCoreAnimation(Transform activePieceTransform, int colIndex, int rowIndex)
 		{
+			
 			Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
 			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
+			int teleporterIndex = FindTeleporterIndex(CalcBoardPos(activePieceTransform));
+			bool isTeleporter = teleportPos.Length > 0 && teleporterIndex != teleportPos.Length;
 			bool teleporterIn = IsTeleporterIn(activePieceTransform, colIndex, rowIndex);
 			bool waterPark = IsWithinWaterPark(activePieceTransform);
 			TraversalCounter(activePieceTransform, waterPark);
 			Direction waterParkExit = GetWaterParkExit(activePieceTransform, waterPark);
 			Direction waterPark2ndDir = Get2ndDir(activePieceTransform, waterPark, startingDirection);
-			SetAnimatorEvents(animator, startingDirection, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
+			Debug.Log("StartCoreAnimation with indexes (" + colIndex.ToString() + ", " + rowIndex.ToString() + ")"
+				+ ", startingDirection: " + startingDirection.ToString()
+				+ ", isTeleporter: " + isTeleporter.ToString()
+				+ ", teleporterIn: " + teleporterIn.ToString()
+				+ ", waterPark: " + waterPark.ToString()
+				+ ", waterParkExit: " + waterParkExit.ToString()
+				+ ", waterPark2ndDir: " + waterPark2ndDir.ToString()
+				+ ", position (" + activePieceTransform.position.x.ToString() + ", " + activePieceTransform.position.y.ToString() + ")"
+				);
+
+			SetAnimatorEvents(animator, startingDirection, isTeleporter, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
 			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 			animState[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = AnimStatus.Started;
@@ -693,25 +718,25 @@ namespace PipeCircles
 			return Direction.Nowhere;
 		}
 
-		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool teleporterIn, 
+		private void SetAnimatorEvents(Animator animator, Direction startingDirection, bool isTeleporter, bool teleporterIn, 
 			bool waterPark, Direction waterParkExit, Direction waterPark2ndDir)
 		{
-			Direction exitingDirection = ReverseDirection(startingDirection);
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
 			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
+			//animator.SetBool("In", false);
+			Debug.Log("Animator name: " + animator.name.ToString());
 
-			if (teleporterIn)
+			if (isTeleporter)
 			{
-				animator.SetBool("In", true);
-			} else if (waterPark)
+				animator.SetBool("In", teleporterIn);
+			}
+
+			if (waterPark)
 			{
 				animator.SetBool("LeftOrRightExit", waterParkExit == Direction.Left || waterParkExit == Direction.Right);
 				animator.SetBool("LeftOrBottomExit", waterParkExit == Direction.Left || waterParkExit == Direction.Bottom);
 				animator.SetBool("LeftOrRight2nd", waterPark2ndDir == Direction.Left || waterPark2ndDir == Direction.Right);
 				animator.SetBool("LeftOrBottom2nd", waterPark2ndDir == Direction.Left || waterPark2ndDir == Direction.Bottom);
-			} else
-			{//Standard
-				animator.SetBool("In", false);
 			}
 
 			animator.SetTrigger("Transition");
@@ -912,6 +937,9 @@ namespace PipeCircles
 			bool primaryElementMissing = false; 
 			bool secondaryElementMissing = false;
 
+			Debug.Log("AnimationComplete path index (" + activeColumn.ToString() + ", " + activeRow.ToString() + "), isSplitter is "
+				+ isSplitter.ToString() + ", isWaterPark is " + isWaterPark.ToString());
+
 			if (!isSplitter && !isWaterPark)
 			{
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
@@ -932,9 +960,12 @@ namespace PipeCircles
 			} else if (isSplitter)
 			{
 				//Primary path
+				Debug.Log("AnimationCompleteIsSplitter 1st if statement is " + (activeRow + 1 < pathFromStart[activeColumn].Count).ToString());
+
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next primary element
 				{
 					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
+					Debug.Log("NewTransform exists: " + (newTransform != null).ToString());
 					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
 				} else
 				{
