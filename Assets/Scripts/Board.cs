@@ -68,6 +68,7 @@ namespace PipeCircles
 		//Water Park stuff
 		List<Vector3Int> parkInPathsConnected = new List<Vector3Int>();
 		List<Vector3Int> parkTimesTraversed = new List<Vector3Int>();
+		List<Vector4> parkPosAndInitialPathIndex = new List<Vector4>();
 		#endregion VariableDeclaration
 
 		#region Awake
@@ -170,7 +171,9 @@ namespace PipeCircles
 			{
 				Animator animator = preplacedPiecesHolder.GetChild(i).GetComponent<Animator>();
 				if (animator == null) { continue; }
+				animator.logWarnings = false;
 				animator.SetTrigger("PlayVFX");
+				animator.logWarnings = true;
 			}
 		}
 
@@ -309,6 +312,7 @@ namespace PipeCircles
 					FindColumnPath(path, secondExitDirection, currentColumn);
 				}
 
+				#region AddColumnsToListsIfNeeded
 				if (currentColumn >= path.Count) //New column needed before GetNewBoardPos checks it
 				{
 					path.Add(new List<PathTransformDirection>());
@@ -319,6 +323,7 @@ namespace PipeCircles
 				{
 					columnTraversed.Add(false);
 				}
+				#endregion AddColumnsToListsIfNeeded
 
 				Vector2Int potentialBoardPos = GetNewBoardPos(path, firstExitDirection, currentColumn, oldColumn);
 				if (!CheckValidBoardPos(potentialBoardPos)) { return; } //Piece on edge of board => no more path
@@ -326,7 +331,8 @@ namespace PipeCircles
 				Direction entranceDirection = ReverseDirection(firstExitDirection);
 				Vector2Int newBoardPos;
 				if (IsWithinWaterPark(potentialBoardPos))
-				{ //Water park
+				{
+					#region WaterParkSpecific
 					if (!DoesParkAcceptWaterThere(potentialBoardPos, entranceDirection)) { return; }
 					int parkIndex = FindWaterParkPosIndex(potentialBoardPos);
 					potentialBoardPos = waterParkPos[parkIndex]; //Changing the location to the park since the park is on the board
@@ -335,24 +341,21 @@ namespace PipeCircles
 					newBoardPos = potentialBoardPos;
 					if (parkInPathsConnected.Contains(new Vector3Int (potentialBoardPos.x, potentialBoardPos.y, 1)))
 					{
-						//Debug.Log("Got in to condition 1");
 						path[currentColumn].Add(new PathTransformDirection(board[newBoardPos.x, newBoardPos.y], entranceDirection));
 						return; //Don't let path continue until both streams appear at the park
 					} else if (parkInPathsConnected.Contains(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 2)))
 					{
-						//Debug.Log("Got in to condition 2");
 						path[currentColumn].Add(new PathTransformDirection(board[newBoardPos.x, newBoardPos.y], entranceDirection));
 					} else if (parkInPathsConnected.Contains(new Vector3Int(potentialBoardPos.x, potentialBoardPos.y, 3)))
 					{
-						Debug.Log("Got in to condition 3");
 						path[currentColumn].Add(new PathTransformDirection(board[newBoardPos.x, newBoardPos.y], Direction.Nowhere));
 					} else 
 					{
 						return;
 					}
-					
+					#endregion WaterParkSpecific
 				} else
-				{ //Not a water park
+				{ 
 					if (board[potentialBoardPos.x, potentialBoardPos.y] == null) { return; } //No piece placed yet => no more path
 					if (!board[potentialBoardPos.x, potentialBoardPos.y].GetComponent<Piece>().CanWaterEnter(entranceDirection)) { return; } //Piece is turned wrong way => no more path
 					//Now have a valid piece, can add it to the path list
@@ -440,8 +443,6 @@ namespace PipeCircles
 			Vector2Int currentBoardPos = new Vector2Int(currentBoardPosX, currentBoardPosY);
 			Vector2Int returnValue = new Vector2Int(returnXValue, returnYValue);
 
-			//Debug.Log("Inside GetNewBoardPos, currentBoardPos is (" + currentBoardPos.x.ToString() + ", " + currentBoardPos.y.ToString() + ")");
-
 			#region TeleporterSpecialCase
 			//Teleporter special handling of next position
 			int teleporterIndex = FindTeleporterIndex(currentBoardPos);
@@ -467,17 +468,26 @@ namespace PipeCircles
 			//Water Park special handling of next position
 			if(IsWithinWaterPark(currentBoardPos))
 			{
-				//ooo	Needs to go from x to N when the ReturnValue would place it at P
-				//oxPN	So, add another in the direction of the park exit,
-				//ooo
+				//ooo	Needs to go from x to 3 if park is done, or back to 2 if exiting
+				//o2x3	So, add another in the direction of the park exit,
+				//ooo	or just go back to the park location
 
 				int parkIndex = FindWaterParkPosIndex(currentBoardPos);
 				Transform parkTransform = board[waterParkPos[parkIndex].x, waterParkPos[parkIndex].y];
+
 				Piece parkPiece = parkTransform.GetComponent<Piece>();
 				Direction parkExitDir = parkPiece.GetParkExit();
-				int parkXValue = returnXValue + dirToVector2[parkExitDir].x;
-				int parkYValue = returnYValue + dirToVector2[parkExitDir].y;			
-				return new Vector2Int(parkXValue, parkYValue);
+
+				if (parkInPathsConnected.Contains(new Vector3Int(currentBoardPosX, currentBoardPosY, 2)))
+				{
+					return new Vector2Int(currentBoardPosX, currentBoardPosY);
+
+				} else if (parkInPathsConnected.Contains(new Vector3Int(currentBoardPosX, currentBoardPosY, 3)))
+				{
+					int newXValue = returnXValue + dirToVector2[parkExitDir].x;
+					int newYValue = returnYValue + dirToVector2[parkExitDir].y;
+					return new Vector2Int(newXValue, newYValue);
+				} //If neither 2 nor 3, something went wrong and just let it pass through the water park section
 			}
 			#endregion WaterParkSpecialCase
 
@@ -628,6 +638,7 @@ namespace PipeCircles
 						animState.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Right), AnimStatus.NotStarted);
 						animState.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Bottom), AnimStatus.NotStarted);
 						animState.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Left), AnimStatus.NotStarted);
+						animState.Add(new PathTransformDirection(pathFromStart[i][j].pathTransform, Direction.Nowhere), AnimStatus.NotStarted);
 					}
 				}
 			}
@@ -643,39 +654,46 @@ namespace PipeCircles
 				waterFlowStarted = true;
 				if (pathFromStart.Count == 0 || pathFromStart[0].Count == 0) { LevelOver(); } //No starting piece, so just kill the round
 				parkTimesTraversed.Clear();
+				parkPosAndInitialPathIndex.Clear();
 				StartCoreAnimation(pathFromStart[0][0].pathTransform, 0, 0);
 			}
 		}
 
 		private void StartCoreAnimation(Transform activePieceTransform, int colIndex, int rowIndex)
 		{
-			
 			Animator animator = activePieceTransform.gameObject.GetComponent<Animator>();
 			Direction startingDirection = pathFromStart[colIndex][rowIndex].direction;
 			int teleporterIndex = FindTeleporterIndex(CalcBoardPos(activePieceTransform));
 			bool isTeleporter = teleportPos.Length > 0 && teleporterIndex != teleportPos.Length;
-			bool teleporterIn = IsTeleporterIn(activePieceTransform, colIndex, rowIndex);
+			bool teleporterIn = IsTeleporterIn(activePieceTransform, isTeleporter, colIndex, rowIndex);
 			bool waterPark = IsWithinWaterPark(activePieceTransform);
 			TraversalCounter(activePieceTransform, waterPark);
 			Direction waterParkExit = GetWaterParkExit(activePieceTransform, waterPark);
 			Direction waterPark2ndDir = Get2ndDir(activePieceTransform, waterPark, startingDirection);
-			Debug.Log("StartCoreAnimation with indexes (" + colIndex.ToString() + ", " + rowIndex.ToString() + ")"
-				+ ", startingDirection: " + startingDirection.ToString()
-				+ ", isTeleporter: " + isTeleporter.ToString()
-				+ ", teleporterIn: " + teleporterIn.ToString()
-				+ ", waterPark: " + waterPark.ToString()
-				+ ", waterParkExit: " + waterParkExit.ToString()
-				+ ", waterPark2ndDir: " + waterPark2ndDir.ToString()
-				+ ", position (" + activePieceTransform.position.x.ToString() + ", " + activePieceTransform.position.y.ToString() + ")"
-				);
+			//Debug.Log("StartCoreAnimation with indexes (" + colIndex.ToString() + ", " + rowIndex.ToString() + ")"
+			//	+ ", startingDirection: " + startingDirection.ToString()
+			//	+ ", teleporterIndex: " + teleporterIndex.ToString()
+			//	+ ", isTeleporter: " + isTeleporter.ToString()
+			//	+ ", teleporterIn: " + teleporterIn.ToString()
+			//	//+ ", waterPark: " + waterPark.ToString()
+			//	//+ ", waterParkExit: " + waterParkExit.ToString()
+			//	//+ ", waterPark2ndDir: " + waterPark2ndDir.ToString()
+			//	+ ", position (" + activePieceTransform.position.x.ToString() + ", " + activePieceTransform.position.y.ToString() + ")"
+			//	);
+			if (isTeleporter && !teleporterIn)
+			{
+				SetAnimatorEvents(animator, ReverseDirection(startingDirection), isTeleporter, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
+			} else
+			{
+				SetAnimatorEvents(animator, startingDirection, isTeleporter, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
+			}
 
-			SetAnimatorEvents(animator, startingDirection, isTeleporter, teleporterIn, waterPark, waterParkExit, waterPark2ndDir);
 			activePieceTransform.gameObject.tag = UNTAGGED_TAG; //Prevents the piece from being replaced by another
 			FindObjectOfType<Scoring>().GetComponent<Scoring>().PieceTraveled();
 			animState[new PathTransformDirection(pathFromStart[colIndex][rowIndex].pathTransform, startingDirection)] = AnimStatus.Started;
 		}
 		
-		private bool IsTeleporterIn(Transform activePieceTransform, int colIndex, int rowIndex)
+		private bool IsTeleporterIn(Transform activePieceTransform, bool isTeleporter, int colIndex, int rowIndex)
 		{
 			/*/////
 			This algorithm will fail if two teleporters are placed adjacent to each other
@@ -684,9 +702,11 @@ namespace PipeCircles
 			*//////
 
 			if (colIndex == 0 && rowIndex == 0)	{ return true; } //Starting piece doesn't have a previous piece
+			if (!isTeleporter) { return true; }
 
 			Vector2Int previousPiecePathIndexes = FindPreviousPiecePathIndexes(colIndex, rowIndex);
-			
+			//Debug.Log("previousPiecePathIndexes X: " + previousPiecePathIndexes.x.ToString() + ", Y: " + previousPiecePathIndexes.y.ToString());
+
 			Transform previousPieceTransform = pathFromStart[previousPiecePathIndexes.x][previousPiecePathIndexes.y].pathTransform;
 
 			Vector2Int currentPieceBoardPos = CalcBoardPos(activePieceTransform);
@@ -694,15 +714,9 @@ namespace PipeCircles
 			int xDiff = currentPieceBoardPos.x - previousPieceBoardPos.x;
 			int yDiff = currentPieceBoardPos.y - previousPieceBoardPos.y;
 
-			if (xDiff * yDiff != 0) //Either x or y has to be unchanged to be adjacent, so the product must be 0
-			{
-				return false; 
-			}
-			if (Mathf.Abs(xDiff + yDiff) != 1) //(1, 0) or (-1, 0) or (0, 1) or (0, -1)
-			{
-				return false;
-			}
-
+			//Debug.Log("XDiff: " + xDiff.ToString() + ", YDiff: " + yDiff.ToString());
+			if (xDiff * yDiff != 0) { return false; } //Either x or y has to be unchanged to be adjacent, so the product must be 0
+			if (Mathf.Abs(xDiff + yDiff) != 1) { return false; } //(1, 0) or (-1, 0) or (0, 1) or (0, -1)
 			return true;
 		}
 
@@ -711,6 +725,7 @@ namespace PipeCircles
 			if (!waterPark) { return; } //Don't want standard pieces clogging up parkTimesTraversed
 
 			Vector2Int boardPos = CalcBoardPos(activePieceTransform);
+
 			if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 2)))
 			{
 				parkTimesTraversed.Add(new Vector3Int(boardPos.x, boardPos.y, 3));
@@ -727,8 +742,7 @@ namespace PipeCircles
 
 		private Direction GetWaterParkExit(Transform activePieceTransform, bool waterPark)
 		{
-			if (!waterPark)
-			{ return Direction.Nowhere; }
+			if (!waterPark) { return Direction.Nowhere; }
 			Piece activePiece = activePieceTransform.GetComponent<Piece>();
 			return activePiece.GetParkExit();
 		}
@@ -748,7 +762,6 @@ namespace PipeCircles
 			animator.SetBool("LeftOrRightStart", startingDirection == Direction.Left || startingDirection == Direction.Right);
 			animator.SetBool("LeftOrBottomStart", startingDirection == Direction.Left || startingDirection == Direction.Bottom);
 			//animator.SetBool("In", false);
-			Debug.Log("Animator name: " + animator.name.ToString());
 
 			if (isTeleporter)
 			{
@@ -945,24 +958,24 @@ namespace PipeCircles
 		#endregion Projectiles
 
 		#region AnimationComplete
-		public void AnimationComplete(Transform transformAnimComplete, Direction startingDirection)
+		public void AnimationComplete(PathTransformDirection completedAnim)
 		{
-			Vector2Int completedIndexes = FindCompletedPathIndexes(transformAnimComplete, startingDirection);
+			Vector2Int completedIndexes = FindCompletedPathIndexes(completedAnim);
 			int activeColumn = completedIndexes.x;
 			int activeRow = completedIndexes.y;
-			PathTransformDirection completedAnim = new PathTransformDirection(pathFromStart[activeColumn][activeRow].pathTransform, startingDirection);
 			animState[completedAnim] = AnimStatus.Done;
-			Transform activeTransform = completedAnim.pathTransform;
-			Piece activePiece = activeTransform.GetComponent<Piece>();
+			Piece activePiece = completedAnim.pathTransform.GetComponent<Piece>();
 			Direction secondExitDirection = activePiece.SecondExitDirection();
 			bool isSplitter = secondExitDirection != Direction.Nowhere;
-			bool isWaterPark = IsWithinWaterPark(activeTransform);
+			bool isWaterPark = IsWithinWaterPark(completedAnim.pathTransform);
 
-			bool primaryElementMissing = false; 
+			bool primaryElementMissing = false;
 			bool secondaryElementMissing = false;
 
-			Debug.Log("AnimationComplete path index (" + activeColumn.ToString() + ", " + activeRow.ToString() + "), isSplitter is "
-				+ isSplitter.ToString() + ", isWaterPark is " + isWaterPark.ToString());
+			//Debug.Log("AnimationComplete path index (" + activeColumn.ToString()
+			//	+ ", " + activeRow.ToString()
+			//	+ "), isSplitter is " + isSplitter.ToString()
+			//	+ ", isWaterPark is " + isWaterPark.ToString());
 
 			if (!isSplitter && !isWaterPark)
 			{
@@ -970,8 +983,7 @@ namespace PipeCircles
 
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
 				{
-					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
-					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
+					StartCoreAnimation(pathFromStart[activeColumn][activeRow + 1].pathTransform, activeColumn, activeRow + 1);
 				} else
 				{
 					if (deadEndStopsLevel)
@@ -991,8 +1003,7 @@ namespace PipeCircles
 				//Primary path
 				if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next primary element
 				{
-					Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
-					StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
+					StartCoreAnimation(pathFromStart[activeColumn][activeRow + 1].pathTransform, activeColumn, activeRow + 1);
 				} else
 				{
 					primaryElementMissing = true;
@@ -1000,9 +1011,9 @@ namespace PipeCircles
 
 				//Secondary path
 				int currentXPos = CalcBoardPos(pathFromStart[activeColumn][activeRow].pathTransform).x;
-				int newBoardPosX = dirToVector2[secondExitDirection].x + currentXPos;
 				int currentYPos = CalcBoardPos(pathFromStart[activeColumn][activeRow].pathTransform).y;
-				int newBoardPosY = dirToVector2[secondExitDirection].y + currentYPos;
+				int newBoardPosX = currentXPos + dirToVector2[secondExitDirection].x;
+				int newBoardPosY = currentYPos + dirToVector2[secondExitDirection].y;
 				Vector2Int newBoardPos = new Vector2Int(newBoardPosX, newBoardPosY);
 
 				if(CheckValidBoardPos(newBoardPos)
@@ -1020,43 +1031,35 @@ namespace PipeCircles
 					secondaryElementMissing = true;
 				}
 
-				if (primaryElementMissing || secondaryElementMissing)
+				if ((primaryElementMissing || secondaryElementMissing) && deadEndStopsLevel)
 				{
-					if (deadEndStopsLevel)
-					{
-						LevelOver();
-						return;
-					}
+					LevelOver();
+					return;
 				}
 
-				if (primaryElementMissing && secondaryElementMissing)
+				if (primaryElementMissing && secondaryElementMissing && !deadEndStopsLevel) //Checking deadEndStopsLevel here to avoid calling LevelOver twice
 				{
-					if (!deadEndStopsLevel) //Checking here to avoid calling LevelOver twice
-					{
-						columnTraversed[activeColumn] = true;
-					}
+					columnTraversed[activeColumn] = true;
 				}
 				#endregion SplitterStuff
 
 			} else
 			{
 				#region WaterParkStuff
-
-				Vector2Int boardPos = CalcBoardPos(activeTransform);
-
-				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 1)))
-				{
-					columnTraversed[activeColumn] = true;
-				}
-				
-				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 2)))
-				{
-					StartCoreAnimation(activeTransform, activeColumn, activeRow);
-				}
+				Vector2Int boardPos = CalcBoardPos(completedAnim.pathTransform);
 
 				if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 3)))
-				{ //Output stream
-					if (activeRow + 1 < pathFromStart[activeColumn].Count) //Check for next element existance
+				{
+					FirstPathNextPiece firstPathNextPiece = DoesFirstPathHaveNextPiece(boardPos);
+					bool secondPathHasNextPiece = activeRow + 1 < pathFromStart[activeColumn].Count;
+
+					if (firstPathNextPiece.hasNextPiece) //Check for next piece existance along first path to water park
+					{
+						int nextColumn = firstPathNextPiece.pathIndexes.x;
+						int nextRow = firstPathNextPiece.pathIndexes.y;
+						Transform newTransform = pathFromStart[nextColumn][nextRow].pathTransform;
+						StartCoreAnimation(newTransform, nextColumn, nextRow);
+					} else if (secondPathHasNextPiece) //Check for next piece existance along second path to water park
 					{
 						Transform newTransform = pathFromStart[activeColumn][activeRow + 1].pathTransform;
 						StartCoreAnimation(newTransform, activeColumn, activeRow + 1);
@@ -1071,6 +1074,15 @@ namespace PipeCircles
 							columnTraversed[activeColumn] = true;
 						}
 					}
+				} else if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 2)))
+				{
+					//Debug.Log("Length of pathFromStart[0]: " + pathFromStart[0].Count().ToString());
+					//Debug.Log("Length of pathFromStart[1]: " + pathFromStart[1].Count().ToString());
+					StartCoreAnimation(completedAnim.pathTransform, activeColumn, activeRow);
+					columnTraversed[activeColumn] = true;
+				} else if (parkTimesTraversed.Contains(new Vector3Int(boardPos.x, boardPos.y, 1)))
+				{
+					parkPosAndInitialPathIndex.Add(new Vector4(boardPos.x, boardPos.y, activeColumn, activeRow));
 				}
 				#endregion WaterParkStuff
 			}
@@ -1090,11 +1102,9 @@ namespace PipeCircles
 				return;
 			}
 		}
-		
-		private Vector2Int FindCompletedPathIndexes(Transform transformAnimComplete, Direction startingDirection)
-		{
-			PathTransformDirection completedAnim = new PathTransformDirection(transformAnimComplete, startingDirection);
 
+		private Vector2Int FindCompletedPathIndexes(PathTransformDirection completedAnim)
+		{
 			float tolerance = 1f;
 			int completedColumn = -1;
 			int completedRow = -1;
@@ -1102,41 +1112,31 @@ namespace PipeCircles
 			{
 				for (int j = 0; j < pathFromStart[i].Count; j++)
 				{
-					if (Math.Abs(pathFromStart[i][j].pathTransform.position.x - completedAnim.pathTransform.position.x) < tolerance
-						&& Math.Abs(pathFromStart[i][j].pathTransform.position.y - completedAnim.pathTransform.position.y) < tolerance
-						&& pathFromStart[i][j].direction == completedAnim.direction)
+					bool xMatch = Math.Abs(pathFromStart[i][j].pathTransform.position.x - completedAnim.pathTransform.position.x) < tolerance;
+					bool yMatch = Math.Abs(pathFromStart[i][j].pathTransform.position.y - completedAnim.pathTransform.position.y) < tolerance;
+					bool dirMatch = pathFromStart[i][j].direction == completedAnim.direction;
+					bool matchesComplete = xMatch && yMatch && dirMatch;
+
+					int teleporterIndex = FindTeleporterIndex(CalcBoardPos(completedAnim.pathTransform));
+					bool isTeleporter = teleportPos.Length > 0 && teleporterIndex != teleportPos.Length;
+
+					if (isTeleporter)
 					{
-						completedColumn = i;
-						completedRow = j;
-					} else
+						PathTransformDirection animCheck = new PathTransformDirection(pathFromStart[i][j].pathTransform, pathFromStart[i][j].direction);
+						bool animMatch = animState.ContainsKey(animCheck) && animState[animCheck] == AnimStatus.Started;
+						if (matchesComplete && animMatch)
+						{
+							return new Vector2Int(i, j);
+						}
+					} else //Don't need the extra check here because water parks gunk up stuff by using more complicated animations
 					{
-						
+						if (matchesComplete)
+						{
+							return new Vector2Int(i, j);
+						}
 					}
 				}
 			}
-			if (completedColumn == -1 && completedRow == -1)
-			{
-				Debug.LogError("FindCompletedPathIndexes could not find a solution");
-				Debug.Log("XPos:" + transformAnimComplete.position.x.ToString() 
-					+ ", YPos: " + transformAnimComplete.position.y.ToString()
-					+ ", Direction: " + startingDirection.ToString());
-
-				for (int i = 0; i < pathFromStart.Count; i++)
-				{
-					for (int j = 0; j < pathFromStart[i].Count; j++)
-					{
-						Debug.Log("(" + i.ToString() + ", " + j.ToString() + ") at"
-							+ " (" + pathFromStart[i][j].pathTransform.position.x.ToString()
-							+ ", " + pathFromStart[i][j].pathTransform.position.y.ToString()
-							+ "), Direction: " + pathFromStart[i][j].direction.ToString()
-							+ ", Vs. (" + completedAnim.pathTransform.position.x.ToString()
-							+ ", " + completedAnim.pathTransform.position.y.ToString() 
-							+ "), Direction: " + startingDirection.ToString()
-							);
-					}
-				}
-			}
-
 			return new Vector2Int(completedColumn, completedRow);
 		}
 
@@ -1157,6 +1157,25 @@ namespace PipeCircles
 			}
 			return new Vector2Int(newPathColumn, newPathRow);
 		}
+
+		private FirstPathNextPiece DoesFirstPathHaveNextPiece(Vector2Int boardPos)
+		{
+			int pathOffset = 2;
+			for (int i = 0; i < pathFromStart.Count; i++)
+			{
+				for (int j = 0; j < pathFromStart[i].Count; j++)
+				{
+					if (parkPosAndInitialPathIndex.Contains(new Vector4(boardPos.x, boardPos.y, i, j)))
+					{
+						bool hasPiece = pathFromStart[i].Count >= j + pathOffset;
+						Vector2Int pathIndexes = new Vector2Int(i, j + pathOffset);
+						return new FirstPathNextPiece(hasPiece, pathIndexes);
+					}
+				}
+			}
+			return new FirstPathNextPiece(false, new Vector2Int(0, 0));
+		}
+		
 		#endregion AnimationComplete
 
 		#region LevelOver
@@ -1174,7 +1193,7 @@ namespace PipeCircles
 	}
 
 	#region Structs
-	struct PathTransformDirection
+	public struct PathTransformDirection
 	{
 		public Transform pathTransform;
 		public Direction direction;
@@ -1186,7 +1205,7 @@ namespace PipeCircles
 		}
 	}
 
-	struct PathIndexesDirection
+	public struct PathIndexesDirection
 	{
 		public int columnIndex;
 		public int rowIndex;
@@ -1200,7 +1219,7 @@ namespace PipeCircles
 		}
 	}
 
-	struct SplashStatus
+	public struct SplashStatus
 	{
 		public GameObject spriteContainer;
 		public float createTime;
@@ -1213,6 +1232,19 @@ namespace PipeCircles
 			maxFrames = maxFrame;
 		}
 	}
+
+	public struct FirstPathNextPiece
+	{
+		public bool hasNextPiece;
+		public Vector2Int pathIndexes;
+
+		public FirstPathNextPiece(bool haveNextPiece, Vector2Int pathBoardIndexes)
+		{
+			hasNextPiece = haveNextPiece;
+			pathIndexes = pathBoardIndexes;
+		}
+	}
+
 	#endregion Structs
 
 	#region Enums
