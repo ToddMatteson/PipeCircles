@@ -10,6 +10,8 @@ TagManager:
   - TimerText
   - LevelCanvasClickable
   - MenuCoordinator
+  - LevelSelectCoordinator
+  - LevelSelectCanvas
   layers:
   - Default
   - TransparentFX
@@ -20,7 +22,7 @@ TagManager:
   - 
   - 
   - GamePieces
-  - 
+  - LevelSelect
   - 
   - 
   - 
