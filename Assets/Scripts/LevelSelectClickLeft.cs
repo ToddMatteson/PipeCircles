@@ -15,7 +15,7 @@ namespace PipeCircles
 			coord = GameObject.FindGameObjectWithTag("LevelSelectCoordinator");
 			if (coord == null)
 			{
-				Debug.LogError("No object tagged MenuCoordinator was found");
+				Debug.LogError("No object tagged LevelSelectCoordinator was found");
 			} else
 			{
 				coordinator = coord.GetComponent<LevelSelectCoordinator>();
@@ -30,7 +30,7 @@ namespace PipeCircles
 		public void OnMouseUp()
 		{
 			if (menuTransform == null) { return; }
-			coordinator.MoveMenu(menuTransform, Direction.Left, false);
+			coordinator.MoveMenu(menuTransform, Direction.Right);
 		}
 	}
 }

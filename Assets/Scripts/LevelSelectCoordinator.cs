@@ -8,17 +8,18 @@ namespace PipeCircles
 	public class LevelSelectCoordinator : MonoBehaviour
 	{
 		[SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 1f;
+		const int numLevelSelectScreens = 4;
+		[SerializeField] [Tooltip ("If not 4 here, change in code")] Transform[] levelSelectCanvases;
 
 		Transform canvasTransform;
 		Vector3 startPos;
 		Vector3 endPos;
-		float xMoveAmount = 2500f;
+		float xMoveAmount = 2420f;
 		float yMoveAmount = 1080f;
 		GameObject[] buttons;
-		GameObject[] levelCanvases;
-		LevelCanvasSpot[] levelCanvasSpots;
-		float[] levelCanvasOrigXPos;
-		float[] levelCanvasOrigYPos;
+		LevelCanvasSpot[] levelCanvasSpots = new LevelCanvasSpot[numLevelSelectScreens];
+		Vector2[] levelCanvasOrigPos = new Vector2[numLevelSelectScreens];
+		Vector2[] levelCanvasCurrentPos = new Vector2[numLevelSelectScreens];
 		float startingTime;
 		float elapsedMovementTime;
 		bool movingCanvas = false;
@@ -30,14 +31,19 @@ namespace PipeCircles
 		{
 			buttons = GameObject.FindGameObjectsWithTag("LevelCanvasClickable");
 
-			levelCanvases = GameObject.FindGameObjectsWithTag("LevelSelectCanvas");
-			for (int i = 0; i < levelCanvases.Length; i++)
+			if (levelSelectCanvases.Length < 1)
 			{
-				//All canvases will start on the right side of the main level to begin with,
-				//will get moved off screen to the left or right depending on the need
-				levelCanvasSpots[i] = LevelCanvasSpot.Right;
-				levelCanvasOrigXPos[i] = levelCanvases[i].transform.position.x;
-				levelCanvasOrigYPos[i] = levelCanvases[i].transform.position.y;
+				Debug.LogError("No level canvases found");
+			} else
+			{
+				for (int i = 0; i < levelSelectCanvases.Length; i++)
+				{
+					//All canvases will start on the right side of the main level to begin with,
+					//will get moved off screen to the left or right depending on the need
+					levelCanvasSpots[i] = LevelCanvasSpot.Right;
+					levelCanvasOrigPos[i] = new Vector2 (levelSelectCanvases[i].transform.position.x, levelSelectCanvases[i].transform.position.y);
+					levelCanvasCurrentPos[i] = new Vector2(levelSelectCanvases[i].transform.position.x, levelSelectCanvases[i].transform.position.y);
+				}
 			}
 		}
 
@@ -49,10 +55,9 @@ namespace PipeCircles
 			}
 		}
 
-		public void MoveMenu(Transform transformToMove, Direction dirToMoveTowards, bool startedOverLevel)
+		public void MoveMenu(Transform transformToMove, Direction dirToMoveTowards)
 		{
 			canvasTransform = transformToMove;
-			startsOverLevel = startedOverLevel;
 			startPos = canvasTransform.position;
 			endPos = CalcEndPos(dirToMoveTowards);
 
@@ -63,11 +68,11 @@ namespace PipeCircles
 				startingTime = Time.time;
 				if (startsOverLevel)
 				{ //Moving away from level
-					EnableLevelButtons(); 
+					//EnableLevelButtons(); 
 				} else
 				{ //Moving towards level
 					canvasTransform.gameObject.SetActive(true);
-					DisableLevelButtons();
+					//DisableLevelButtons();
 				}
 				MoveCanvas();
 			}
@@ -92,21 +97,21 @@ namespace PipeCircles
 			}
 		}
 
-		private void DisableLevelButtons()
-		{
-			foreach (GameObject button in buttons)
-			{
-				button.gameObject.SetActive(false);
-			}
-		}
+		//private void DisableLevelButtons()
+		//{
+		//	foreach (GameObject button in buttons)
+		//	{
+		//		button.gameObject.SetActive(false);
+		//	}
+		//}
 
-		private void EnableLevelButtons()
-		{
-			foreach (GameObject button in buttons)
-			{
-				button.gameObject.SetActive(true);
-			}
-		}
+		//private void EnableLevelButtons()
+		//{
+		//	foreach (GameObject button in buttons)
+		//	{
+		//		button.gameObject.SetActive(true);
+		//	}
+		//}
 
 		private void MoveCanvas()
 		{

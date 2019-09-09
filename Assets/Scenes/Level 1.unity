@@ -1681,8 +1681,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 447.8, y: 1561.9742}
-  m_SizeDelta: {x: 2602.6, y: 1080}
+  m_AnchoredPosition: {x: 439.9, y: 1561.9742}
+  m_SizeDelta: {x: 2323, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &187122857
 GameObject:
@@ -11842,7 +11842,7 @@ GameObject:
   - component: {fileID: 1480937361}
   m_Layer: 9
   m_Name: Level Select 1 Canvas
-  m_TagString: LevelSelectCanvas
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11864,7 +11864,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 3045, y: 483}
+  m_AnchoredPosition: {x: 2903, y: 483}
   m_SizeDelta: {x: 2597, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1480937361
@@ -12728,8 +12728,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 447.8, y: 1561.9742}
-  m_SizeDelta: {x: 2602.6, y: 1080}
+  m_AnchoredPosition: {x: 439.9, y: 1561.9742}
+  m_SizeDelta: {x: 2323, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1586190033
 GameObject:
@@ -15316,6 +15316,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   totalMovementTime: 1
+  levelSelectCanvases:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1 &1926581539
 GameObject:
   m_ObjectHideFlags: 0
