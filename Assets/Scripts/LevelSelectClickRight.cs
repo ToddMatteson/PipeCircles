@@ -6,7 +6,7 @@ namespace PipeCircles
 {
 	public class LevelSelectClickRight : MonoBehaviour
 	{
-		[SerializeField] Transform menuTransform = null;
+		//[SerializeField] Transform menuTransform = null;
 		GameObject coord;
 		LevelSelectCoordinator coordinator;
 
@@ -29,8 +29,8 @@ namespace PipeCircles
 
 		public void OnMouseUp()
 		{
-			if (menuTransform == null) { return; }
-			coordinator.MoveMenu(menuTransform, Direction.Left);
+			//if (menuTransform == null) { return; }
+			coordinator.LevelClickRight();
 		}
 	}
 }

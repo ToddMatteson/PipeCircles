@@ -11,6 +11,7 @@ TagManager:
   - LevelCanvasClickable
   - MenuCoordinator
   - LevelSelectCoordinator
+  - LevelLoader
   layers:
   - Default
   - TransparentFX

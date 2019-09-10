@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace PipeCircles
 {
-	public class LevelSelectClickLeft : MonoBehaviour
+	public class LevelSelectClickOpen : MonoBehaviour
 	{
-		//[SerializeField] Transform menuTransform = null;
+		//[SerializeField] Transform levelSelectTransform = null;
 		GameObject coord;
 		LevelSelectCoordinator coordinator;
 
@@ -29,8 +29,8 @@ namespace PipeCircles
 
 		public void OnMouseUp()
 		{
-			//if (menuTransform == null) { return; }
-			coordinator.LevelClickLeft();
+			//if (levelSelectTransform == null) { return; }
+			coordinator.LevelClickOpen();
 		}
 	}
 }

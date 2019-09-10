@@ -10,6 +10,8 @@ namespace PipeCircles
 
 		int currentSceneIndex;
 
+		int currentLevel = 1;
+
 		void Start()
 		{
 			currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
@@ -38,6 +40,17 @@ namespace PipeCircles
 		public void LoadOptions()
 		{
 			SceneManager.LoadScene("Main Menu"); //TODO replace with Options menu once built
+		}
+
+		public void SetLevel(int newLevel)
+		{
+			currentLevel = newLevel;
+		}
+
+		public int GetLevel()
+		{
+			//return currentLevel;
+			return 1;
 		}
 	}
 }

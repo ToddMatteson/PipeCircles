@@ -8,18 +8,24 @@ namespace PipeCircles
 	public class LevelSelectCoordinator : MonoBehaviour
 	{
 		[SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 1f;
-		const int numLevelSelectScreens = 4;
+		const int NUM_LEVEL_SELECT_SCREENS = 4;
+		const int NUM_LEVELS_PER_SELECT_SCREEN = 20;
 		[SerializeField] [Tooltip ("If not 4 here, change in code")] Transform[] levelSelectCanvases;
+		int currentDisplayedLevelScreen = 0;
 
-		Transform canvasTransform;
-		Vector3 startPos;
-		Vector3 endPos;
-		float xMoveAmount = 2420f;
+		Transform canvasOnScreenTransform;
+		Transform canvasOffScreenTransform;
+		Vector3 onScreenStartPos;
+		Vector3 onScreenEndPos;
+		Vector3 offScreenStartPos;
+		Vector3 offScreenEndPos;
+		float xMoveAmount = 2463f;
 		float yMoveAmount = 1080f;
 		GameObject[] buttons;
-		LevelCanvasSpot[] levelCanvasSpots = new LevelCanvasSpot[numLevelSelectScreens];
-		Vector2[] levelCanvasOrigPos = new Vector2[numLevelSelectScreens];
-		Vector2[] levelCanvasCurrentPos = new Vector2[numLevelSelectScreens];
+		LevelLoader levelLoader;
+		LevelCanvasSpot[] levelCanvasSpots = new LevelCanvasSpot[NUM_LEVEL_SELECT_SCREENS];
+		Vector2[] levelCanvasOrigPos = new Vector2[NUM_LEVEL_SELECT_SCREENS];
+		Vector2[] levelCanvasCurrentPos = new Vector2[NUM_LEVEL_SELECT_SCREENS];
 		float startingTime;
 		float elapsedMovementTime;
 		bool movingCanvas = false;
@@ -30,6 +36,7 @@ namespace PipeCircles
 		private void Start()
 		{
 			buttons = GameObject.FindGameObjectsWithTag("LevelCanvasClickable");
+			levelLoader = GameObject.FindGameObjectWithTag("LevelLoader").GetComponent<LevelLoader>();
 
 			if (levelSelectCanvases.Length < 1)
 			{
@@ -47,7 +54,7 @@ namespace PipeCircles
 			}
 		}
 
-		public void Update()
+		private void Update()
 		{
 			if (canMove)
 			{
@@ -55,13 +62,111 @@ namespace PipeCircles
 			}
 		}
 
-		public void MoveMenu(Transform transformToMove, Direction dirToMoveTowards)
+		public void LevelClickOpen()
 		{
-			canvasTransform = transformToMove;
-			startPos = canvasTransform.position;
-			endPos = CalcEndPos(dirToMoveTowards);
+			int currentLevel = levelLoader.GetLevel();
+			int screenNum = currentLevel / NUM_LEVELS_PER_SELECT_SCREEN;
+			
+			//Move current screen to above the main screen, then slide it down
+			MoveHiddenMenu(levelSelectCanvases[screenNum], Direction.Top);
+			MoveOneShowingMenu(levelSelectCanvases[screenNum], Direction.Top, Direction.Bottom);
+			currentDisplayedLevelScreen = screenNum;
+		}
 
-			if (canvasTransform != null && !movingCanvas)
+		public void LevelClickLeft()
+		{
+			//Move current screen right, and lower screen # right, publicly
+			if (currentDisplayedLevelScreen == 0)
+			{
+				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Right, 
+					levelSelectCanvases[NUM_LEVEL_SELECT_SCREENS - 1], Direction.Left, Direction.Bottom);
+			} else
+			{
+				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Right, 
+					levelSelectCanvases[currentDisplayedLevelScreen - 1], Direction.Left, Direction.Bottom);
+			}
+		}
+
+		public void LevelClickRight()
+		{
+			//Move current screen left, and higher screen # left, publicly
+			if (currentDisplayedLevelScreen == NUM_LEVEL_SELECT_SCREENS - 1)
+			{
+				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Left,
+					levelSelectCanvases[0], Direction.Right, Direction.Bottom);
+			} else
+			{
+				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Left, 
+					levelSelectCanvases[currentDisplayedLevelScreen + 1], Direction.Right, Direction.Bottom);
+			}
+		}
+
+		public void LevelClickClose()
+		{
+			//Move current screen up, publicly
+			MoveOneShowingMenu(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Top);
+			
+			//Move current screen to the right, once done with the public sliding
+			//How to navigate the definite timing issue here?
+
+			//Move all screens to the right, privately
+			for (int i = 0; i < NUM_LEVEL_SELECT_SCREENS; i++)
+			{
+				if (i != currentDisplayedLevelScreen)
+				{
+					MoveHiddenMenu(levelSelectCanvases[i], Direction.Right);
+				}
+			}
+		}
+
+		private void MoveHiddenMenu(Transform transformToMove, Direction dirRelativeToMain)
+		{
+			//Instantly move the requested transform to the position specified
+			switch (dirRelativeToMain)
+			{
+				case Direction.Top:
+					transformToMove.position = levelCanvasOrigPos[0] + yMoveAmount * Vector2.up + xMoveAmount * Vector2.left;
+					break;
+				case Direction.Right:
+					transformToMove.position = levelCanvasOrigPos[0];
+					break;
+				case Direction.Bottom:
+					transformToMove.position = levelCanvasOrigPos[0] + xMoveAmount * Vector2.left;
+					break;
+				case Direction.Left:
+					transformToMove.position = levelCanvasOrigPos[0] + 2.0f * xMoveAmount * Vector2.left;
+					break;
+				case Direction.Nowhere:
+					transformToMove.position = levelCanvasOrigPos[0];
+					break;
+				default:
+					transformToMove.position = levelCanvasOrigPos[0];
+					break;
+			}
+		}
+
+		private void MoveOneShowingMenu(Transform transformToMove, Direction dirBeginPos, Direction dirEndPos)
+		{
+			MoveTwoShowingMenus(transformToMove, dirBeginPos, dirEndPos, null, Direction.Right, Direction.Right);
+		}
+
+		private void MoveTwoShowingMenus(Transform transformOnScreen, Direction dirOnScreenBeginPos, Direction dirOnScreenEndPos,
+			Transform transformOffScreen, Direction dirOffScreenBeginPos, Direction dirOffScreenEndPos)
+		{
+			MoveHiddenMenu(transformOnScreen, dirOnScreenBeginPos);
+			canvasOnScreenTransform = transformOnScreen;
+			onScreenStartPos = canvasOnScreenTransform.position;
+			onScreenEndPos = CalcEndPos(dirOnScreenEndPos);
+
+			if (transformOffScreen != null)
+			{
+				MoveHiddenMenu(transformOffScreen, dirOffScreenBeginPos);
+				canvasOffScreenTransform = transformOffScreen;
+				offScreenStartPos = canvasOffScreenTransform.position;
+				offScreenEndPos = CalcEndPos(dirOffScreenEndPos);
+			}
+
+			if (canvasOnScreenTransform != null && !movingCanvas)
 			{
 				movingCanvas = true;
 				canMove = true;
@@ -71,29 +176,29 @@ namespace PipeCircles
 					//EnableLevelButtons(); 
 				} else
 				{ //Moving towards level
-					canvasTransform.gameObject.SetActive(true);
+					canvasOnScreenTransform.gameObject.SetActive(true);
 					//DisableLevelButtons();
 				}
 				MoveCanvas();
 			}
 		}
 
-		private Vector3 CalcEndPos(Direction dirToMoveTowards)
+		private Vector3 CalcEndPos(Direction dirToEndAt)
 		{
-			switch (dirToMoveTowards)
+			switch (dirToEndAt)
 			{
 				case Direction.Top:
-					return startPos + yMoveAmount * Vector3.up;
+					return levelCanvasOrigPos[0] + yMoveAmount * Vector2.up + xMoveAmount * Vector2.left;
 				case Direction.Right:
-					return startPos + xMoveAmount * Vector3.right;
+					return levelCanvasOrigPos[0];
 				case Direction.Bottom:
-					return startPos + yMoveAmount * Vector3.down;
+					return levelCanvasOrigPos[0] + xMoveAmount * Vector2.left;
 				case Direction.Left:
-					return startPos + xMoveAmount * Vector3.left;
+					return levelCanvasOrigPos[0] + 2.0f * xMoveAmount * Vector2.left;
 				case Direction.Nowhere:
-					return startPos;
+					return levelCanvasOrigPos[0];
 				default:
-					return startPos;
+					return levelCanvasOrigPos[0];
 			}
 		}
 
@@ -126,13 +231,14 @@ namespace PipeCircles
 				}
 
 				float t = elapsedMovementTime / totalMovementTime;
-				canvasTransform.position = Vector3.Lerp(startPos, endPos, t);
+				canvasOnScreenTransform.position = Vector3.Lerp(onScreenStartPos, onScreenEndPos, t);
+
+				if (canvasOffScreenTransform != null)
+				{
+					canvasOffScreenTransform.position = Vector3.Lerp(offScreenStartPos, offScreenEndPos, t);
+				}
 			} else
 			{
-				if (startsOverLevel)
-				{	//Is now away from level, doesn't need to be active
-					canvasTransform.gameObject.SetActive(false);
-				}
 				canMove = false;
 			}
 		}
