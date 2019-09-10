@@ -29,8 +29,9 @@ namespace PipeCircles
 
 		public void OnMouseUp()
 		{
-			//if (levelSelectTransform == null) { return; }
-			coordinator.LevelClickOpen();
+            //if (levelSelectTransform == null) { return; }
+            Debug.Log("Within OnMouseUp");
+            coordinator.LevelClickOpen();
 		}
 	}
 }
