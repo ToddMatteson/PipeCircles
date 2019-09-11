@@ -9,7 +9,6 @@ TagManager:
   - Board
   - TimerText
   - LevelCanvasClickable
-  - MenuCoordinator
   - LevelSelectCoordinator
   - LevelLoader
   layers:

@@ -7,13 +7,18 @@ namespace PipeCircles
 {
 	public class LevelSelectCoordinator : MonoBehaviour
 	{
+        //In this script I am using the directions as relative to the main game screen.
+        //The exception is Direction.Bottom, which is used the same as the main game screen.
+
         const int NUM_LEVEL_SELECT_SCREENS = 5;
         const int NUM_LEVELS_PER_SELECT_SCREEN = 20;
         const float X_MOVE_PIXELS = 2463f;
         const float Y_MOVE_PIXELS = 1080f;
         [SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 1f;
-        [SerializeField] [Tooltip ("If not 5 here, change in code")] Transform[] levelSelectCanvases;
-		int currentDisplayedLevelScreen = 0;
+        [SerializeField] [Tooltip ("If not 5 here, change in code")] Transform[] levelSelectCanvases = null;
+
+
+        int currentDisplayedLevelScreen = 0;
 
 		Transform canvasOnScreenTransform;
 		Transform canvasOffScreenTransform;
@@ -123,28 +128,8 @@ namespace PipeCircles
 
 		private void MoveHiddenMenu(Transform transformToMove, Direction dirRelativeToMain)
 		{
-			//Instantly move the requested transform to the position specified
-			switch (dirRelativeToMain)
-			{
-				case Direction.Top:
-					transformToMove.position = levelCanvasOrigPos[0] + Y_MOVE_PIXELS * Vector2.up + X_MOVE_PIXELS * Vector2.left;
-					break;
-				case Direction.Right:
-					transformToMove.position = levelCanvasOrigPos[0];
-					break;
-				case Direction.Bottom:
-					transformToMove.position = levelCanvasOrigPos[0] + X_MOVE_PIXELS * Vector2.left;
-					break;
-				case Direction.Left:
-					transformToMove.position = levelCanvasOrigPos[0] + 2.0f * X_MOVE_PIXELS * Vector2.left;
-					break;
-				case Direction.Nowhere:
-					transformToMove.position = levelCanvasOrigPos[0];
-					break;
-				default:
-					transformToMove.position = levelCanvasOrigPos[0];
-					break;
-			}
+            //Instantly move the requested transform to the position specified
+            transformToMove.position = DirectionToPosition(dirRelativeToMain);
 		}
 
 		private void MoveOneShowingMenu(Transform transformToMove, Direction dirBeginPos, Direction dirEndPos)
@@ -158,14 +143,14 @@ namespace PipeCircles
 			MoveHiddenMenu(transformOnScreen, dirOnScreenBeginPos);
 			canvasOnScreenTransform = transformOnScreen;
 			onScreenStartPos = canvasOnScreenTransform.position;
-			onScreenEndPos = CalcEndPos(dirOnScreenEndPos);
+			onScreenEndPos = DirectionToPosition(dirOnScreenEndPos);
 
 			if (transformOffScreen != null)
 			{
 				MoveHiddenMenu(transformOffScreen, dirOffScreenBeginPos);
 				canvasOffScreenTransform = transformOffScreen;
 				offScreenStartPos = canvasOffScreenTransform.position;
-				offScreenEndPos = CalcEndPos(dirOffScreenEndPos);
+				offScreenEndPos = DirectionToPosition(dirOffScreenEndPos);
 			}
 
 			if (canvasOnScreenTransform != null && !movingCanvas)
@@ -185,7 +170,7 @@ namespace PipeCircles
 			}
 		}
 
-		private Vector3 CalcEndPos(Direction dirToEndAt)
+		private Vector3 DirectionToPosition(Direction dirToEndAt)
 		{
 			switch (dirToEndAt)
 			{
