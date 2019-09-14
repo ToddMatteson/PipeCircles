@@ -15,8 +15,8 @@ namespace PipeCircles
         const float X_MOVE_PIXELS = 2463f;
         const float Y_MOVE_PIXELS = 1080f;
         [SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 1f;
+        [SerializeField] Transform commonItems = null;
         [SerializeField] [Tooltip ("If not 5 here, change in code")] Transform[] levelSelectCanvases = null;
-
 
         int currentDisplayedLevelScreen = 0;
 
@@ -28,17 +28,22 @@ namespace PipeCircles
 		Vector3 offScreenEndPos;
 	
 		GameObject[] buttons;
-		LevelLoader levelLoader;
+		
 		Vector2[] levelCanvasOrigPos = new Vector2[NUM_LEVEL_SELECT_SCREENS];
 		float startingTime;
 		float elapsedMovementTime;
 		bool movingCanvas = false;
 		bool canMove = false;
         bool startsOverLevel = false;
-		
-		private void Start()
+
+        //Just a setup for a future improvement
+        LevelLoader levelLoader;
+
+        private void Start()
 		{
 			buttons = GameObject.FindGameObjectsWithTag("LevelCanvasClickable");
+
+            //Just setup for a future improvement
 			levelLoader = GameObject.FindGameObjectWithTag("LevelLoader").GetComponent<LevelLoader>();
 
 			if (levelSelectCanvases.Length < 1)
@@ -66,6 +71,9 @@ namespace PipeCircles
 		public void LevelClickOpen()
 		{
             MoveHiddenMenu(levelSelectCanvases[0], Direction.Top);
+            
+            //Problem here since the call below this line overwrites the canvas to move, need to create a new movement method(s)
+            MoveOneShowingMenu(commonItems, Direction.Top, Direction.Bottom);
 			MoveOneShowingMenu(levelSelectCanvases[0], Direction.Top, Direction.Bottom);
             if (!movingCanvas)
             {
@@ -76,6 +84,7 @@ namespace PipeCircles
                 DisableLevelButtons();
                 MoveCanvas();
             }
+            currentDisplayedLevelScreen = 0;
         }
 
 		public void LevelClickLeft()
@@ -85,10 +94,12 @@ namespace PipeCircles
 			{
 				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Right, 
 					levelSelectCanvases[NUM_LEVEL_SELECT_SCREENS - 1], Direction.Left, Direction.Bottom);
+                currentDisplayedLevelScreen = NUM_LEVEL_SELECT_SCREENS - 1;
 			} else
 			{
 				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Right, 
 					levelSelectCanvases[currentDisplayedLevelScreen - 1], Direction.Left, Direction.Bottom);
+                currentDisplayedLevelScreen--;
 			}
 		}
 
@@ -99,10 +110,12 @@ namespace PipeCircles
 			{
 				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Left,
 					levelSelectCanvases[0], Direction.Right, Direction.Bottom);
+                currentDisplayedLevelScreen = 0;
 			} else
 			{
 				MoveTwoShowingMenus(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Left, 
 					levelSelectCanvases[currentDisplayedLevelScreen + 1], Direction.Right, Direction.Bottom);
+                currentDisplayedLevelScreen++;
 			}
 		}
 
@@ -124,6 +137,7 @@ namespace PipeCircles
 			//}
 
             EnableLevelButtons();
+            currentDisplayedLevelScreen = 0;
 		}
 
 		private void MoveHiddenMenu(Transform transformToMove, Direction dirRelativeToMain)
