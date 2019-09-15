@@ -8,22 +8,22 @@ namespace PipeCircles
 	{
 		//[SerializeField] Transform menuTransform = null;
 		GameObject coord;
-		LevelSelectCoordinator coordinator;
+		MenuCoordinator coordinator;
 
 		private void Start()
 		{
-			coord = GameObject.FindGameObjectWithTag("LevelSelectCoordinator");
+			coord = GameObject.FindGameObjectWithTag("MenuCoordinator");
 			if (coord == null)
 			{
 				Debug.LogError("No object tagged LevelSelectCoordinator was found");
 			} else
 			{
-				coordinator = coord.GetComponent<LevelSelectCoordinator>();
+				coordinator = coord.GetComponent<MenuCoordinator>();
 			}
 
 			if (coordinator == null)
 			{
-				Debug.LogError("No Level Select Coordinator script found on the object with tag LevelSelectCoordinator");
+				Debug.LogError("No Menu Coordinator script found on the object with tag MenuCoordinator");
 			}
 		}
 

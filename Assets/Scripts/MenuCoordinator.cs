@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace PipeCircles
 {
-	public class LevelSelectCoordinator : MonoBehaviour
+	public class MenuCoordinator : MonoBehaviour
 	{
         //In this script I am using the directions as relative to the main game screen.
         //The exception is Direction.Bottom, which is used the same as the main game screen.
@@ -36,6 +36,12 @@ namespace PipeCircles
 		bool canMove = false;
         bool startsOverLevel = false;
 
+        float commonItemsStartingTime;
+        float commonItemsElapsedTime;
+        bool movingCommonItems = false;
+        Direction commonStart = Direction.Top;
+        Direction commonEnd = Direction.Top;
+
         //Just a setup for a future improvement
         LevelLoader levelLoader;
 
@@ -62,18 +68,24 @@ namespace PipeCircles
 
 		private void Update()
 		{
-			if (canMove)
+            if (movingCommonItems)
+            {
+                MoveCommonItems();
+            }
+
+            if (canMove)
 			{
 				MoveCanvas();
 			}
+
+            
 		}
 
 		public void LevelClickOpen()
 		{
+            MoveCommonItems(commonItems, Direction.Top, Direction.Bottom);
+
             MoveHiddenMenu(levelSelectCanvases[0], Direction.Top);
-            
-            //Problem here since the call below this line overwrites the canvas to move, need to create a new movement method(s)
-            MoveOneShowingMenu(commonItems, Direction.Top, Direction.Bottom);
 			MoveOneShowingMenu(levelSelectCanvases[0], Direction.Top, Direction.Bottom);
             if (!movingCanvas)
             {
@@ -123,19 +135,10 @@ namespace PipeCircles
 		{
 			//Move current screen up, publicly
 			MoveOneShowingMenu(levelSelectCanvases[currentDisplayedLevelScreen], Direction.Bottom, Direction.Top);
-			
-			//Move current screen to the right, once done with the public sliding
-			//How to navigate the definite timing issue here?
 
-			//Move all screens to the right, privately
-			//for (int i = 0; i < NUM_LEVEL_SELECT_SCREENS; i++)
-			//{
-			//	if (i != currentDisplayedLevelScreen)
-			//	{
-			//		MoveHiddenMenu(levelSelectCanvases[i], Direction.Right);
-			//	}
-			//}
-
+            //Move the menu frame up
+            MoveCommonItems(commonItems, Direction.Bottom, Direction.Top);
+						
             EnableLevelButtons();
             currentDisplayedLevelScreen = 0;
 		}
@@ -246,5 +249,35 @@ namespace PipeCircles
                 canvasOffScreenTransform = null;
 			}
 		}
+
+        private void MoveCommonItems(Transform commonItems, Direction dirStart, Direction dirEnd)
+        {
+            movingCommonItems = true;
+            commonItemsStartingTime = Time.time;
+            commonStart = dirStart;
+            commonEnd = dirEnd;
+        }
+
+        private void MoveCommonItems()
+        {
+            if (movingCommonItems)
+            {
+                commonItemsElapsedTime = Time.time - commonItemsStartingTime;
+
+                if (commonItemsElapsedTime > totalMovementTime)
+                {
+                    commonItemsElapsedTime = totalMovementTime;
+                    movingCommonItems = false;
+                }
+
+                float t = commonItemsElapsedTime / totalMovementTime;
+
+                commonItems.position = Vector3.Lerp(DirectionToPosition(commonStart), DirectionToPosition(commonEnd), t);
+            }
+            else
+            {
+                movingCommonItems = false;
+            }
+        }
 	}
 }
