@@ -89,7 +89,6 @@ namespace PipeCircles
 			MoveOneShowingMenu(levelSelectCanvases[0], Direction.Top, Direction.Bottom);
             if (!movingCanvas)
             {
-                Debug.Log("Inside if statement");
                 movingCanvas = true;
                 canMove = true;
                 startingTime = Time.time;
