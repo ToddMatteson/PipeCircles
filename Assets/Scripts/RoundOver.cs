@@ -20,7 +20,6 @@ namespace PipeCircles
         float elapsedMovementTime;
         bool movingCanvas = false;
         bool canMove = false;
-        bool startsOverLevel = false;
 
         private void Start()
         {
