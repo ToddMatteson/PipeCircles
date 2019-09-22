@@ -9,7 +9,7 @@ namespace PipeCircles
         const float X_MOVE_PIXELS = 2463f;
         const float Y_MOVE_PIXELS = 1080f;
         [SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 0.4f;
-        [SerializeField] Transform roundOverCanvas = null;
+        [SerializeField] Transform roundCanvas = null;
 
         Transform canvasScreenTransform;
         Vector3 screenStartPos;
@@ -23,13 +23,13 @@ namespace PipeCircles
 
         private void Start()
         {
-            if (roundOverCanvas == null)
+            if (roundCanvas == null)
             {
                 Debug.LogError("No round over canvas found");
             }
             else
             {
-                canvasOrigPos = new Vector2(roundOverCanvas.transform.position.x, roundOverCanvas.transform.position.y);
+                canvasOrigPos = new Vector2(roundCanvas.transform.position.x, roundCanvas.transform.position.y);
             }
         }
 
@@ -48,8 +48,8 @@ namespace PipeCircles
 
         public void ShowRoundOverScreen()
         {
-            MoveHiddenMenu(roundOverCanvas, Direction.Bottom);
-            MoveOneShowingMenu(roundOverCanvas, Direction.Bottom, Direction.Top);
+            MoveHiddenMenu(roundCanvas, Direction.Bottom);
+            MoveOneShowingMenu(roundCanvas, Direction.Bottom, Direction.Top);
             if (!movingCanvas)
             {
                 movingCanvas = true;
@@ -61,8 +61,8 @@ namespace PipeCircles
 
         public void HideRoundOverScreen()
         {
-            MoveHiddenMenu(roundOverCanvas, Direction.Top);
-            MoveOneShowingMenu(roundOverCanvas, Direction.Top, Direction.Bottom);
+            MoveHiddenMenu(roundCanvas, Direction.Top);
+            MoveOneShowingMenu(roundCanvas, Direction.Top, Direction.Bottom);
             if (!movingCanvas)
             {
                 movingCanvas = true;
