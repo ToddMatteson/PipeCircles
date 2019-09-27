@@ -1189,8 +1189,8 @@ namespace PipeCircles
             //TODO What to do about a piece being dragged? Just delete it? Shouldn't charge player for it as an unused piece
 
             //Bring up the round scoring explanation screen
-            RoundCanvas roundCanvas = GameObject.FindGameObjectWithTag("RoundOver").GetComponent<RoundCanvas>();
-            roundCanvas.ShowRoundOverScreen();
+            RoundOver roundOver = GameObject.FindGameObjectWithTag("RoundOver").GetComponent<RoundOver>();
+            roundOver.ShowRoundOverScreen();
 		}
 		#endregion LevelOver
 	}

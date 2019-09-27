@@ -14,7 +14,8 @@ namespace PipeCircles
         [SerializeField] Transform roundCanvas = null;
         [SerializeField] Sprite successImage = null;
         [SerializeField] Sprite failureImage = null;
-        [SerializeField] Transform[] imageHolders = null;
+        [SerializeField] Transform[] successFailureHolders = null;
+        [SerializeField] Transform overallSuccessFailureHolder = null;
 
         LevelRequirements levelRequirements;
 
@@ -30,25 +31,65 @@ namespace PipeCircles
 
         private void Start()
         {
+            GetCanvasOrigPos();
+            GetLevelRequirementsReference();
+            CheckValidImageHolders();
+            CheckSuccessFailureSprites();
+        }
+
+        private void GetCanvasOrigPos()
+        {
             if (roundCanvas == null)
             {
-                Debug.LogError("No round over canvas found");
+                Debug.LogWarning("No round over canvas found");
             }
             else
             {
                 canvasOrigPos = new Vector2(roundCanvas.transform.position.x, roundCanvas.transform.position.y);
             }
-
-            AcquireLevelRequirementsReference();
         }
 
-        private void AcquireLevelRequirementsReference()
+        private void GetLevelRequirementsReference()
         {
             levelRequirements = GameObject.FindObjectOfType<LevelRequirements>().GetComponent<LevelRequirements>();
 
             if (levelRequirements == null)
             {
                 Debug.LogWarning("LevelRequirements not found");
+            }
+        }
+
+        private void CheckValidImageHolders()
+        {
+            for (int i = 0; i < MAX_REQUIREMENT; i++) //The +1 on MAX_REQUIREMENT is for the overall pass/fail image
+            {
+                SpriteRenderer sr = successFailureHolders[i].GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    Debug.LogWarning("Missing a sprite renderer on an image holder transform");
+                    return;
+                }
+            }
+
+            SpriteRenderer spriteR = overallSuccessFailureHolder.GetComponent<SpriteRenderer>();
+            if (spriteR == null)
+            {
+                Debug.LogWarning("Missing a sprite renderer on overall image holder transform");
+                return;
+            }
+
+        }
+
+        private void CheckSuccessFailureSprites()
+        {
+            if (successImage == null)
+            {
+                Debug.LogWarning("Success sprite not found");
+            }
+
+            if (failureImage == null)
+            {
+                Debug.LogWarning("Failure sprite not found");
             }
         }
 
@@ -68,6 +109,10 @@ namespace PipeCircles
         public void ShowRoundOverScreen()
         {
             MoveHiddenMenu(roundCanvas, Direction.Bottom);
+
+            //Get the requirements loaded up here before the movement
+            ShowRequirement();
+
             MoveOneShowingMenu(roundCanvas, Direction.Bottom, Direction.Top);
             if (!movingCanvas)
             {
@@ -151,29 +196,33 @@ namespace PipeCircles
             {
                 canMove = false;
                 canvasScreenTransform = null;
+
+                //Display result images
+                //TODO implement a delay on results coming out
+                for (int i = 0; i < MAX_REQUIREMENT; i++)
+                {
+                    ShowResultImage(i + 1);
+                }
+                ShowOverallResultImage();
             }
         }
 
         private void ResetRequirements()
         {
-
+            //TODO How do I want to accomplish this?
         }
 
         private void ShowRequirement()
         {
-            
+            //TODO How do I want to accomplish this?
+            //Load up the requirements before the screen becomes visible
         }
 
         private void ResetResults()
         {
             for (int i = 0; i < MAX_REQUIREMENT; i++)
             {
-                SpriteRenderer sr = imageHolders[i].GetComponent<SpriteRenderer>();
-                if (sr == null)
-                {
-                    Debug.LogWarning("Missing a sprite renderer on an image holder transform");
-                    return;
-                }
+                SpriteRenderer sr = successFailureHolders[i].GetComponent<SpriteRenderer>();
                 sr.sprite = null;
             }
         }
@@ -186,20 +235,9 @@ namespace PipeCircles
                 return;
             }
 
-            if (imageHolders[requirement - 1] == null)
-            {
-                Debug.LogWarning("Missing an imageHolder transform");
-                return;
-            }
-
-            SpriteRenderer sr = imageHolders[requirement - 1].GetComponent<SpriteRenderer>();
-            if (sr == null)
-            {
-                Debug.LogWarning("Missing a sprite renderer on an image holder transform");
-                return;
-            }
-
+            SpriteRenderer sr = successFailureHolders[requirement - 1].GetComponent<SpriteRenderer>();
             int level = GetCurrentLevel();
+
             if(!levelRequirements.DoesLevelRequirementExist(level, requirement))
             {
                 //Don't want to show a result if the requirement doesn't exist
@@ -212,6 +250,21 @@ namespace PipeCircles
             }
             else
             {   
+                sr.sprite = failureImage;
+            }
+        }
+
+        private void ShowOverallResultImage()
+        {
+            SpriteRenderer sr = overallSuccessFailureHolder.GetComponent<SpriteRenderer>();
+            int level = GetCurrentLevel();
+
+            if (levelRequirements.AreAllLevelRequirementsMet(level))
+            {
+                sr.sprite = successImage;
+            }
+            else
+            {
                 sr.sprite = failureImage;
             }
         }

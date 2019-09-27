@@ -8,8 +8,12 @@ namespace PipeCircles
 	{
         const float X_MOVE_PIXELS = 2463f;
         const float Y_MOVE_PIXELS = 1080f;
+        const int MAX_REQUIREMENT = 4;
         [SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 0.4f;
         [SerializeField] Transform roundCanvas = null;
+        [SerializeField] Transform[] imageHolders = null;
+
+        LevelRequirements levelRequirements;
 
         Transform canvasScreenTransform;
         Vector3 screenStartPos;
@@ -23,13 +27,43 @@ namespace PipeCircles
 
         private void Start()
         {
+            GetCanvasOrigPos();
+            GetLevelRequirementsReference();
+            CheckValidImageHolders();
+        }
+
+        private void GetCanvasOrigPos()
+        {
             if (roundCanvas == null)
             {
-                Debug.LogError("No round over canvas found");
+                Debug.LogWarning("No round over canvas found");
             }
             else
             {
                 canvasOrigPos = new Vector2(roundCanvas.transform.position.x, roundCanvas.transform.position.y);
+            }
+        }
+
+        private void GetLevelRequirementsReference()
+        {
+            levelRequirements = GameObject.FindObjectOfType<LevelRequirements>().GetComponent<LevelRequirements>();
+
+            if (levelRequirements == null)
+            {
+                Debug.LogWarning("LevelRequirements not found");
+            }
+        }
+
+        private void CheckValidImageHolders()
+        {
+            for (int i = 0; i < MAX_REQUIREMENT; i++)
+            {
+                SpriteRenderer sr = imageHolders[i].GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    Debug.LogWarning("Missing a sprite renderer on an image holder transform");
+                    return;
+                }
             }
         }
 
@@ -133,6 +167,48 @@ namespace PipeCircles
                 canMove = false;
                 canvasScreenTransform = null;
             }
+        }
+
+        private void ResetRequirements()
+        {
+            for (int i = 0; i < MAX_REQUIREMENT; i++)
+            {
+                SpriteRenderer sr = imageHolders[i].GetComponent<SpriteRenderer>();
+                sr.sprite = null;
+            }
+        }
+
+        private void ShowRequirement(int requirement)
+        {
+            if (requirement < 1 || requirement > MAX_REQUIREMENT)
+            {
+                Debug.LogWarning("Invalid requirement passed in");
+                return;
+            }
+
+            SpriteRenderer sr = imageHolders[requirement - 1].GetComponent<SpriteRenderer>();
+            int level = GetCurrentLevel();
+
+            if (!levelRequirements.DoesLevelRequirementExist(level, requirement))
+            {
+                //Don't want to show a result if the requirement doesn't exist
+                return;
+            }
+
+            if (levelRequirements.IsLevelRequirementMet(level, requirement))
+            {
+                sr.sprite = null;
+            }
+            else
+            {
+                sr.sprite = null;
+            }
+        }
+
+        private int GetCurrentLevel()
+        {
+            //TODO implement this
+            return 1;
         }
     }
 }

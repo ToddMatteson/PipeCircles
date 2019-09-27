@@ -27,7 +27,7 @@ namespace PipeCircles
             bool requirementsMet = true;
             for (int i = 0; i < MAX_REQUIREMENT; i++)
             {
-                requirementsMet = requirementsMet && IsLevelRequirementMet(levelToCheck, i);
+                requirementsMet = requirementsMet && IsLevelRequirementMet(levelToCheck, i + 1);
             }
             return requirementsMet;
 
@@ -53,7 +53,7 @@ namespace PipeCircles
                     switch (requirement)
                     {
                         case 1:
-                            return (tempScoreVariable > 10);
+                            return false; //(tempScoreVariable > 10);
                         case 2:
                             return (tempLoopsVariable > 1);
                         case 3:
@@ -1194,13 +1194,13 @@ namespace PipeCircles
                     switch (requirement)
                     {
                         case 1:
-                            return true;
+                            return false;
                         case 2:
-                            return true;
+                            return false;
                         case 3:
-                            return true;
+                            return false;
                         case 4:
-                            return true;
+                            return false;
                         default:
                             return false;
                     }
