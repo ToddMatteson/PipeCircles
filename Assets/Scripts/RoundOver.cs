@@ -10,6 +10,16 @@ namespace PipeCircles
         const float X_MOVE_PIXELS = 2463f;
         const float Y_MOVE_PIXELS = 1080f;
         const int MAX_REQUIREMENT = 4;
+        const float successScalingX = 15.6f;
+        const float successScalingY = 15.6f;
+        const float successScalingZ = 1f;
+        const float failureScalingX = 1f;
+        const float failureScalingY = 1f;
+        const float failureScalingZ = 1f;
+        Vector3 successScaling = new Vector3(successScalingX, successScalingY, successScalingZ);
+        Vector3 failureScaling = new Vector3(failureScalingX, failureScalingY, failureScalingZ);
+
+
         [SerializeField] [Range(0.1f, 5f)] float totalMovementTime = 0.4f;
         [SerializeField] Transform roundCanvas = null;
         [SerializeField] Sprite successImage = null;
@@ -246,10 +256,12 @@ namespace PipeCircles
 
             if (levelRequirements.IsLevelRequirementMet(level, requirement))
             {
+                successFailureHolders[requirement - 1].localScale = successScaling;
                 sr.sprite = successImage;
             }
             else
-            {   
+            {
+                successFailureHolders[requirement - 1].localScale = failureScaling;
                 sr.sprite = failureImage;
             }
         }
@@ -261,10 +273,12 @@ namespace PipeCircles
 
             if (levelRequirements.AreAllLevelRequirementsMet(level))
             {
+                overallSuccessFailureHolder.localScale = successScaling;
                 sr.sprite = successImage;
             }
             else
             {
+                overallSuccessFailureHolder.localScale = failureScaling;
                 sr.sprite = failureImage;
             }
         }

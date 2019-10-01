@@ -53,13 +53,13 @@ namespace PipeCircles
                     switch (requirement)
                     {
                         case 1:
-                            return false; //(tempScoreVariable > 10);
+                            return false;//(tempScoreVariable > 10);
                         case 2:
-                            return (tempLoopsVariable > 1);
+                            return false;//(tempLoopsVariable > 1);
                         case 3:
-                            return tempEndAtTheEndVariable;
+                            return false;//tempEndAtTheEndVariable;
                         case 4:
-                            return (tempSpecialFeaturesAchieved > 1);
+                            return false;//(tempSpecialFeaturesAchieved > 1);
                         default:
                             return false;
                     }
@@ -1194,13 +1194,13 @@ namespace PipeCircles
                     switch (requirement)
                     {
                         case 1:
-                            return false;
+                            return true;
                         case 2:
-                            return false;
+                            return true;
                         case 3:
-                            return false;
+                            return true;
                         case 4:
-                            return false;
+                            return true;
                         default:
                             return false;
                     }
