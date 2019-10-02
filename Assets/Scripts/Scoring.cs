@@ -22,24 +22,6 @@ namespace PipeCircles
 		int levelLoops = 0;
 		int totalLoops = 0;
 
-		private void Awake()
-		{
-			SingletonPattern();
-		}
-
-		private void SingletonPattern()
-		{
-			int classCount = FindObjectsOfType<Scoring>().Length;
-			if (classCount > 1)
-			{
-				gameObject.SetActive(false);
-				Destroy(gameObject);
-			} else
-			{
-				DontDestroyOnLoad(gameObject);
-			}
-		}
-
 		private void Start()
 		{
 			UpdateScoreAndLoopsText();

@@ -32,16 +32,6 @@ namespace PipeCircles
 			SceneManager.LoadScene(currentSceneIndex + 1);
 		}
 
-		public void LoadMainMenu()
-		{
-			SceneManager.LoadScene("Main Menu");
-		}
-
-		public void LoadOptions()
-		{
-			SceneManager.LoadScene("Main Menu"); //TODO replace with Options menu once built
-		}
-
 		public void SetLevel(int newLevel)
 		{
 			currentLevel = newLevel;

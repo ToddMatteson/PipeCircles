@@ -16,24 +16,6 @@ namespace PipeCircles
 		bool timerRunning = false;
 		bool speedUp = false;
 
-		private void Awake()
-		{
-			SingletonPattern();
-		}
-
-		private void SingletonPattern()
-		{
-			int classCount = FindObjectsOfType<Timer>().Length;
-			if (classCount > 1)
-			{
-				gameObject.SetActive(false);
-				Destroy(gameObject);
-			} else
-			{
-				DontDestroyOnLoad(gameObject);
-			}
-		}
-
 		private void Start()
 		{
 			timerText = GameObject.FindGameObjectWithTag("TimerText");
